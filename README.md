@@ -34,6 +34,7 @@ export default buildConfig({
   plugins: [
     oAuthPlugin({
       enabled: true,
+      serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
       authCollection: "users", // assuming you already have a users collection with auth enabled
       clientId: process.env.CLIENT_ID || "",
       clientSecret: process.env.CLIENT_SECRET || "",

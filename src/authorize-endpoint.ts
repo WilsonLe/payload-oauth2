@@ -11,7 +11,7 @@ export const createAuthorizeEndpoint = (
     const authCollection = pluginOptions.authCollection || "users";
     const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
     const redirectUri = encodeURIComponent(
-      `${process.env.NEXT_PUBLIC_URL}/api/${authCollection}${callbackPath}`
+      `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`
     );
     const scope = encodeURIComponent(pluginOptions.scopes.join(" "));
     const responseType = "code";
