@@ -1,8 +1,7 @@
-import React from 'react';
+import React from "react";
+import "./index.scss";
 
-import './index.scss';
-
-const baseClass = 'after-dashboard';
+const baseClass = "after-dashboard";
 
 const AfterDashboard: React.FC = () => {
   return (
@@ -12,7 +11,7 @@ const AfterDashboard: React.FC = () => {
         Find it here: <code>src/components/afterDashboard</code>
       </h5>
     </div>
-  )
+  );
 };
 
 export default AfterDashboard;

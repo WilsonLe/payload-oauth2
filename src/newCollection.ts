@@ -1,16 +1,16 @@
-import { CollectionConfig } from 'payload/types';
+import { CollectionConfig } from "payload/types";
 
 const newCollection: CollectionConfig = {
-  slug: 'new-collection',
+  slug: "new-collection",
   admin: {
-    useAsTitle: 'title',
+    useAsTitle: "title",
   },
   fields: [
     {
-      name: 'title',
-      type: 'text',
+      name: "title",
+      type: "text",
     },
   ],
-}
+};
 
 export default newCollection;

@@ -55,6 +55,7 @@
     "next": "^14.3.0-canary",
     "payload": "3.0.0-beta.10",
     "prettier": "^2.8.8",
+    "prettier-plugin-organize-imports": "^3.2.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sharp": "^0.33.3",
