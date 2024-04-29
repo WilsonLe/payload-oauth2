@@ -8,7 +8,7 @@ import { samplePlugin } from '../../src/index'
 import sharp from 'sharp'
 
 export default buildConfig({
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: process.env.PAYLOAD_SECRET || 'super-secret',
   admin: {
     user: Users.slug,
   },

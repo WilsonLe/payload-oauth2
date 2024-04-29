@@ -27,7 +27,7 @@
     "clean": "rimraf dist && rimraf dev/yarn.lock",
     "prepublishOnly": "yarn clean && yarn build && cd dev && yarn test"
   },
-  "author": "dev@payloadcms.com",
+  "author": "wilsonle2907@gmail.com",
   "license": "MIT",
   "peerDependencies": {
     "payload": "beta"
@@ -46,7 +46,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
     "eslint": "^8.19.0",
-    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
@@ -54,7 +54,8 @@
     "next": "^14.3.0-canary",
     "payload": "3.0.0-beta.10",
     "prettier": "^2.7.1",
-    "react": "^18.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "sharp": "^0.33.3",
     "typescript": "^5.4.2"
   }

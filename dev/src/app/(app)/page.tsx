@@ -1,4 +1,4 @@
-import Example from '@/components/Example'
+import Example from '../../components/Example'
 import Link from 'next/link'
 import React from 'react'
 
