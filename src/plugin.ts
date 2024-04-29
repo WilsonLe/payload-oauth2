@@ -14,6 +14,7 @@ export const oAuthPlugin =
     if (pluginOptions.OAuthLoginButton) {
       afterLogin.push(pluginOptions.OAuthLoginButton);
     }
+
     config.admin = {
       ...(config.admin || {}),
 
@@ -58,8 +59,7 @@ export const oAuthPlugin =
     config.endpoints = [
       ...(config.endpoints || []),
       // Add additional endpoints here
-      createAuthorizeEndpoint(pluginOptions),
-      createCallbackEndpoint(pluginOptions),
+
     ];
 
     config.globals = [

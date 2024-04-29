@@ -8,8 +8,10 @@ export const createAuthorizeEndpoint = (
   path: pluginOptions.authorizePath || "/oauth/authorize",
   handler: async () => {
     const clientId = pluginOptions.clientId;
+    const authCollection = pluginOptions.authCollection || "users";
+    const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
     const redirectUri = encodeURIComponent(
-      `${process.env.NEXT_PUBLIC_URL}/api${pluginOptions.callbackPath}`
+      `${process.env.NEXT_PUBLIC_URL}/api/${authCollection}${callbackPath}`
     );
     const scope = encodeURIComponent(pluginOptions.scopes.join(" "));
     const responseType = "code";

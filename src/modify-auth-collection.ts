@@ -1,4 +1,6 @@
 import { CollectionConfig } from "payload/types";
+import { createAuthorizeEndpoint } from "./authorize-endpoint";
+import { createCallbackEndpoint } from "./callback-endpoint";
 import { PluginTypes } from "./types";
 
 export const modifyAuthCollection = (
@@ -26,6 +28,10 @@ export const modifyAuthCollection = (
           update: () => false,
         },
       },
+    ],
+    endpoints: [
+      createAuthorizeEndpoint(pluginOptions),
+      createCallbackEndpoint(pluginOptions),
     ],
   };
 };

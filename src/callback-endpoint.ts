@@ -20,11 +20,11 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // shorthands
       // /////////////////////////////////////
-
-      const redirectUri = `${process.env.NEXT_PUBLIC_URL}/api${pluginOptions.callbackPath}`;
       const subFieldName = pluginOptions.subFieldName || "sub";
       const authCollection = pluginOptions.authCollection || "users";
       const collectionConfig = req.payload.collections[authCollection].config;
+      const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
+      const redirectUri = `${process.env.NEXT_PUBLIC_URL}/api/${authCollection}${callbackPath}`;
 
       // /////////////////////////////////////
       // beforeOperation - Collection

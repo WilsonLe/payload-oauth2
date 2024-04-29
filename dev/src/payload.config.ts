@@ -24,8 +24,6 @@ export default buildConfig({
       clientId: process.env.CLIENT_ID || "",
       clientSecret: process.env.CLIENT_SECRET || "",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
-      authorizePath: "/oauth/users/google/authorize",
-      callbackPath: "/oauth/users/google/callback",
       scopes: [
         "https://www.googleapis.com/auth/userinfo.email",
         "https://www.googleapis.com/auth/userinfo.profile",
