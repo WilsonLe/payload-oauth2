@@ -13,7 +13,8 @@
     "plugin",
     "typescript",
     "react",
-    "oauth2"
+    "oauth2",
+    "payload-plugin"
   ],
   "scripts": {
     "dev": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next dev",
