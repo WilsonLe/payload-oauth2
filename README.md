@@ -3,11 +3,11 @@
 <a href="LICENSE">
   <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg" alt="Software License" />
 </a>
-<a href="https://github.com/thgh/payload-plugin-oauth/issues">
-  <img src="https://img.shields.io/github/issues/thgh/payload-plugin-oauth.svg" alt="Issues" />
+<a href="https://github.com/wilsonle/payload-oauth2/issues">
+  <img src="https://img.shields.io/github/issues/wilsonle/payload-oauth2.svg" alt="Issues" />
 </a>
 <a href="https://npmjs.org/package/payload-oauth2">
-  <img src="https://img.shields.io/npm/v/payload-plugin-oauth.svg?style=flat-squar" alt="NPM" />
+  <img src="https://img.shields.io/npm/v/payload-oauth2.svg?style=flat-squar" alt="NPM" />
 </a>
 
 # Features
@@ -74,3 +74,7 @@ To get it running:
 # License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
+
+# Credits
+
+This package was inspired by [Payload Plugin OAuth](https://github.com/thgh/payload-plugin-oauth)
