@@ -13,7 +13,7 @@
     "plugin",
     "typescript",
     "react",
-    "template"
+    "oauth2"
   ],
   "scripts": {
     "dev": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next dev",
