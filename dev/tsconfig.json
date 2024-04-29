@@ -1,19 +1,11 @@
 {
   "compilerOptions": {
     "paths": {
-      "payload/generated-types": [
-        "./src/payload-types.ts"
-      ],
-      "@payload-config": [
-        "./src/payload.config.ts"
-      ]
+      "payload/generated-types": ["./src/payload-types.ts"],
+      "@payload-config": ["./src/payload.config.ts"]
     },
     "baseUrl": ".",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -25,22 +17,11 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
     "target": "ES2017"
   },
-  "include": [
-    "src",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ],
+  "include": ["src", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "dist", "build"],
   "ts-node": {
     "transpileOnly": true,
     "swc": true

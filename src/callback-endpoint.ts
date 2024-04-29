@@ -1,4 +1,6 @@
-import payload from "payload";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { generatePayloadCookie, getFieldsToSign } from "payload/auth";
 import { Endpoint } from "payload/config";
 import { PluginTypes } from "./types";
 
@@ -8,17 +10,32 @@ export const createCallbackEndpoint = (
   method: "get",
   path: pluginOptions.callbackPath || "/oauth/callback",
   handler: async (req) => {
-    const { code } = req.query;
-    if (typeof code !== "string") {
-      return Response.json({ error: "Code not provided" }, { status: 400 });
-    }
-    // shorthands
-    const redirectUri = `${process.env.NEXT_PUBLIC_URL}/api${pluginOptions.callbackPath}`;
-    const subFieldName = pluginOptions.subFieldName || "sub";
-    const authCollection = pluginOptions.authCollection || "users";
-
     try {
-      const response = await fetch(pluginOptions.tokenEndpoint, {
+      const { code } = req.query;
+      if (typeof code !== "string")
+        throw new Error(
+          `Code not in query string: ${JSON.stringify(req.query)}`
+        );
+
+      // /////////////////////////////////////
+      // shorthands
+      // /////////////////////////////////////
+
+      const redirectUri = `${process.env.NEXT_PUBLIC_URL}/api${pluginOptions.callbackPath}`;
+      const subFieldName = pluginOptions.subFieldName || "sub";
+      const authCollection = pluginOptions.authCollection || "users";
+      const collectionConfig = req.payload.collections[authCollection].config;
+
+      // /////////////////////////////////////
+      // beforeOperation - Collection
+      // /////////////////////////////////////
+      // Not implemented
+
+      // /////////////////////////////////////
+      // obtain access token
+      // /////////////////////////////////////
+
+      const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
@@ -29,33 +46,135 @@ export const createCallbackEndpoint = (
           grant_type: "authorization_code",
         }).toString(),
       });
-      const { access_token } = await response.json();
+      const tokenData = await tokenResponse.json();
+      const access_token = tokenData?.access_token;
       if (typeof access_token !== "string")
-        return Response.json(
-          { error: "Failed to retrieve access token" },
-          { status: 401 }
-        );
+        throw new Error(`No access token: ${JSON.stringify(tokenData)}`);
+
+      // /////////////////////////////////////
+      // get user info
+      // /////////////////////////////////////
       const userInfo = await pluginOptions.getUserInfo(access_token);
-      const users = await payload.find({
-        req,
+
+      // /////////////////////////////////////
+      // ensure user exists
+      // /////////////////////////////////////
+
+      const existingUser = await req.payload.find({
         collection: authCollection,
         where: { [subFieldName]: { equals: userInfo[subFieldName] } },
         showHiddenFields: true,
         limit: 1,
       });
-      if (users.docs.length === 0) {
-        await payload.create({
-          req,
+      let user: any;
+      if (existingUser.docs.length === 0) {
+        user = await req.payload.create({
           collection: authCollection,
-          data: userInfo,
+          data: {
+            ...userInfo,
+            // Stuff breaks when password is missing
+            password: crypto.randomBytes(32).toString("hex"),
+          },
+          showHiddenFields: true,
         });
+      } else {
+        user = existingUser.docs[0];
       }
 
-      // Redirect or handle authentication session setup here:
-      return Response.redirect(`${process.env.NEXT_PUBLIC_URL}/admin`); // Redirect to a profile page or dashboard
+      // /////////////////////////////////////
+      // beforeLogin - Collection
+      // /////////////////////////////////////
+
+      await collectionConfig.hooks.beforeLogin.reduce(
+        async (priorHook, hook) => {
+          await priorHook;
+
+          user =
+            (await hook({
+              collection: collectionConfig,
+              context: req.context,
+              req,
+              user,
+            })) || user;
+        },
+        Promise.resolve()
+      );
+
+      // /////////////////////////////////////
+      // login - OAuth2
+      // /////////////////////////////////////
+      const fieldsToSign = getFieldsToSign({
+        collectionConfig,
+        email: user.email,
+        user,
+      });
+
+      const token = jwt.sign(fieldsToSign, req.payload.secret, {
+        expiresIn: collectionConfig.auth.tokenExpiration,
+      });
+
+      req.user = user;
+
+      // /////////////////////////////////////
+      // afterLogin - Collection
+      // /////////////////////////////////////
+
+      await collectionConfig.hooks.afterLogin.reduce(
+        async (priorHook, hook) => {
+          await priorHook;
+
+          user =
+            (await hook({
+              collection: collectionConfig,
+              context: req.context,
+              req,
+              token,
+              user,
+            })) || user;
+        },
+        Promise.resolve()
+      );
+
+      // /////////////////////////////////////
+      // afterRead - Fields
+      // /////////////////////////////////////
+      // Not implemented
+
+      // /////////////////////////////////////
+      // generate and set cookie
+      // /////////////////////////////////////
+      const cookie = generatePayloadCookie({
+        collectionConfig,
+        payload: req.payload,
+        token,
+      });
+
+      // /////////////////////////////////////
+      // success redirect
+      // /////////////////////////////////////
+      return new Response(null, {
+        headers: {
+          "Set-Cookie": cookie,
+          Location: await pluginOptions.successRedirect(req),
+        },
+        status: 302,
+      });
     } catch (error) {
-      console.error("Error during token exchange:", error);
-      return Response.json({ error: "Internal server error" }, { status: 500 });
+      // /////////////////////////////////////
+      // failure redirect
+      // /////////////////////////////////////
+      return new Response(
+        JSON.stringify({
+          messages: [{ error: `Error authenticate: ${JSON.stringify(error)}` }],
+        }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Location: await pluginOptions.failureRedirect(req),
+          },
+          status: 302,
+        }
+      );
     }
   },
 });

@@ -1,3 +1,5 @@
+import { PayloadRequest } from "payload/types";
+
 export interface PluginTypes {
   /**
    * Enable or disable plugin
@@ -78,6 +80,18 @@ export interface PluginTypes {
    * @default "/oauth/callback"
    */
   callbackPath?: string;
+
+  /**
+   * Redirect users after successful login.
+   */
+  successRedirect: (req: PayloadRequest) => string | Promise<string>;
+
+  /**
+   * Redirect users after failed login.
+   */
+  failureRedirect: (req: PayloadRequest) => string | Promise<string>;
+
+  OAuthLoginButton?: React.ComponentType;
 }
 
 export interface NewCollectionTypes {

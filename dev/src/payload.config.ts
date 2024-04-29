@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { oAuthPlugin } from "../../src/plugin";
 import Examples from "./collections/Examples";
 import Users from "./collections/Users";
+import { OAuthLoginButton } from "./components/OAuthLoginButton";
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || "super-secret",
@@ -42,6 +43,9 @@ export default buildConfig({
           sub: user.sub,
         };
       },
+      successRedirect: () => "/admin",
+      failureRedirect: () => "/admin",
+      OAuthLoginButton,
     }),
   ],
   db: mongooseAdapter({ url: process.env.DATABASE_URI || "" }),

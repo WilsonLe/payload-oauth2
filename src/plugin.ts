@@ -1,8 +1,7 @@
 import type { Plugin } from "payload/config";
 import { createAuthorizeEndpoint } from "./authorize-endpoint";
 import { createCallbackEndpoint } from "./callback-endpoint";
-import AfterDashboard from "./components/AfterDashboard";
-import newCollection from "./newCollection";
+import { modifyAuthCollection } from "./modify-auth-collection";
 import { onInitExtension } from "./onInitExtension";
 import type { PluginTypes } from "./types";
 
@@ -11,6 +10,10 @@ export const oAuthPlugin =
   (incomingConfig) => {
     let config = { ...incomingConfig };
 
+    const afterLogin = config.admin?.components?.afterLogin || [];
+    if (pluginOptions.OAuthLoginButton) {
+      afterLogin.push(pluginOptions.OAuthLoginButton);
+    }
     config.admin = {
       ...(config.admin || {}),
 
@@ -18,10 +21,7 @@ export const oAuthPlugin =
       components: {
         ...(config.admin?.components || {}),
         // Add additional admin components here
-        afterDashboard: [
-          ...(config.admin?.components?.afterDashboard || []),
-          AfterDashboard,
-        ],
+        afterLogin,
       },
     };
 
@@ -31,10 +31,28 @@ export const oAuthPlugin =
       return config;
     }
 
+    const authCollectionSlug = pluginOptions.authCollection || "users";
+    const subFieldName = pluginOptions.subFieldName || "sub";
+    const authCollection = config.collections?.find(
+      (collection) => collection.slug === authCollectionSlug
+    );
+    if (!authCollection) {
+      throw new Error(
+        `The collection with the slug "${authCollectionSlug}" was not found.`
+      );
+    }
+    const modifiedAuthCollection = modifyAuthCollection(
+      pluginOptions,
+      authCollection,
+      subFieldName
+    );
+
     config.collections = [
-      ...(config.collections || []),
+      ...(config.collections?.filter(
+        (collection) => collection.slug !== authCollectionSlug
+      ) || []),
       // Add additional collections here
-      newCollection, // delete this line to remove the example collection
+      modifiedAuthCollection,
     ];
 
     config.endpoints = [
