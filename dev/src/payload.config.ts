@@ -7,8 +7,6 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { samplePlugin } from '../../src/index'
 import sharp from 'sharp'
 import { NextResponse } from 'next/server'
-import { OAuth2Client} from 'google-auth-library';
-import jwt from 'jsonwebtoken'
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || 'super-secret',
