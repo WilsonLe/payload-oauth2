@@ -2,13 +2,11 @@ import type { Plugin } from "payload/config";
 import { modifyAuthCollection } from "./modify-auth-collection";
 import type { PluginTypes } from "./types";
 
-export const oAuthPlugin =
+export const OAuth2Plugin =
   (pluginOptions: PluginTypes): Plugin =>
   (incomingConfig) => {
     let config = { ...incomingConfig };
 
-    // If the plugin is disabled, return the config without modifying it
-    // The order of this check is important, we still want any webpack extensions to be applied even if the plugin is disabled
     if (pluginOptions.enabled === false) {
       return config;
     }
@@ -55,7 +53,6 @@ export const oAuthPlugin =
       ...(config.collections?.filter(
         (collection) => collection.slug !== authCollectionSlug
       ) || []),
-      // Add additional collections here
       modifiedAuthCollection,
     ];
 

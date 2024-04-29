@@ -1,6 +1,6 @@
 {
   "name": "payload-oauth2",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "homepage:": "https://payloadcms.com",
   "repository": "https://github.com/WilsonLe/payload-oauth2",
@@ -15,6 +15,9 @@
     "react",
     "oauth2",
     "payload-plugin"
+  ],
+  "files": [
+    "dist"
   ],
   "scripts": {
     "dev": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next dev",

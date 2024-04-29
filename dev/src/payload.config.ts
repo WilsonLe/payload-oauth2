@@ -3,7 +3,7 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";
 import { buildConfig } from "payload/config";
 import sharp from "sharp";
-import { oAuthPlugin } from "../../src/plugin";
+import { oauth } from "../../src/plugin";
 import Users from "./collections/Users";
 import { OAuthLoginButton } from "./components/OAuthLoginButton";
 
@@ -14,7 +14,7 @@ export default buildConfig({
   collections: [Users],
   typescript: { outputFile: path.resolve(__dirname, "payload-types.ts") },
   plugins: [
-    oAuthPlugin({
+    oauth({
       enabled: true,
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
