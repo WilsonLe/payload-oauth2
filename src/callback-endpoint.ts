@@ -113,8 +113,6 @@ export const createCallbackEndpoint = (
         expiresIn: collectionConfig.auth.tokenExpiration,
       });
 
-      req.user = user;
-
       // /////////////////////////////////////
       // afterLogin - Collection
       // /////////////////////////////////////
