@@ -20,8 +20,6 @@ export const modifyAuthCollection = (
     fields.push({
       name: subFieldName,
       type: "text",
-      required: true,
-      unique: true,
       index: true,
       access: {
         read: () => true,
