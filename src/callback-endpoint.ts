@@ -57,6 +57,11 @@ export const createCallbackEndpoint = (
       const userInfo = await pluginOptions.getUserInfo(access_token);
 
       // /////////////////////////////////////
+      // check if user was returned
+      // /////////////////////////////////////
+      if (userInfo === null) throw new Error(`No User Info`);
+
+      // /////////////////////////////////////
       // ensure user exists
       // /////////////////////////////////////
 
