@@ -8,6 +8,14 @@ export interface PluginTypes {
   enabled?: boolean;
 
   /**
+   * Use email as identity. If true, the user's email will be used as the
+   * single identity for the user. This allows users to log in with different
+   * OAuth providers using the same email.
+   * @default false
+   */
+  useEmailAsIdentity?: boolean;
+
+  /**
    * URL to the server. This is used to redirect users after login.
    * Must not have trailing slash.
    * Must start with http:// or https://

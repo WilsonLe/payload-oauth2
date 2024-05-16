@@ -25,6 +25,7 @@ export const createCallbackEndpoint = (
       const collectionConfig = req.payload.collections[authCollection].config;
       const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
       const redirectUri = `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
+      const useEmailAsIdentity = pluginOptions.useEmailAsIdentity ?? false;
 
       // /////////////////////////////////////
       // beforeOperation - Collection
@@ -59,14 +60,25 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // ensure user exists
       // /////////////////////////////////////
+      let existingUser: any;
+      if (useEmailAsIdentity) {
+        existingUser = await req.payload.find({
+          req,
+          collection: authCollection,
+          where: { email: { equals: userInfo.email } },
+          showHiddenFields: true,
+          limit: 1,
+        });
+      } else {
+        existingUser = await req.payload.find({
+          req,
+          collection: authCollection,
+          where: { [subFieldName]: { equals: userInfo[subFieldName] } },
+          showHiddenFields: true,
+          limit: 1,
+        });
+      }
 
-      const existingUser = await req.payload.find({
-        req,
-        collection: authCollection,
-        where: { [subFieldName]: { equals: userInfo[subFieldName] } },
-        showHiddenFields: true,
-        limit: 1,
-      });
       let user: any;
       if (existingUser.docs.length === 0) {
         user = await req.payload.create({
