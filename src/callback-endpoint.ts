@@ -38,7 +38,10 @@ export const createCallbackEndpoint = (
 
       const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
         body: new URLSearchParams({
           code,
           client_id: pluginOptions.clientId,
