@@ -32,7 +32,7 @@ Integrating Google OAuth2 to `users` collection.
 export default buildConfig({
   // ...
   plugins: [
-    oAuthPlugin({
+    OAuth2Plugin({
       enabled: true,
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
       authCollection: "users", // assuming you already have a users collection with auth enabled

@@ -61,6 +61,7 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
 
       const existingUser = await req.payload.find({
+        req,
         collection: authCollection,
         where: { [subFieldName]: { equals: userInfo[subFieldName] } },
         showHiddenFields: true,
@@ -69,6 +70,7 @@ export const createCallbackEndpoint = (
       let user: any;
       if (existingUser.docs.length === 0) {
         user = await req.payload.create({
+          req,
           collection: authCollection,
           data: {
             ...userInfo,
@@ -78,7 +80,13 @@ export const createCallbackEndpoint = (
           showHiddenFields: true,
         });
       } else {
-        user = existingUser.docs[0];
+        user = await req.payload.update({
+          req,
+          collection: authCollection,
+          id: existingUser.docs[0].id,
+          data: userInfo,
+          showHiddenFields: true,
+        });
       }
 
       // /////////////////////////////////////
