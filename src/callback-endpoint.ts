@@ -184,18 +184,13 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // failure redirect
       // /////////////////////////////////////
-      return new Response(
-        JSON.stringify({
-          messages: [{ error: `Error authenticate: ${JSON.stringify(error)}` }],
-        }),
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Location: await pluginOptions.failureRedirect(req),
-          },
-          status: 302,
-        }
-      );
+      return new Response(null, {
+        headers: {
+          "Content-Type": "application/json",
+          Location: await pluginOptions.failureRedirect(req, error),
+        },
+        status: 302,
+      });
     }
   },
 });

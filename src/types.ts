@@ -104,7 +104,10 @@ export interface PluginTypes {
   /**
    * Redirect users after failed login.
    */
-  failureRedirect: (req: PayloadRequest) => string | Promise<string>;
+  failureRedirect: (
+    req: PayloadRequest,
+    error?: unknown
+  ) => string | Promise<string>;
 
   OAuthLoginButton?: React.ComponentType;
 }
