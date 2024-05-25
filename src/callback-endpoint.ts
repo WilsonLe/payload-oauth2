@@ -135,6 +135,7 @@ export const createCallbackEndpoint = (
       const token = jwt.sign(fieldsToSign, req.payload.secret, {
         expiresIn: collectionConfig.auth.tokenExpiration,
       });
+      req.user = user;
 
       // /////////////////////////////////////
       // afterLogin - Collection
