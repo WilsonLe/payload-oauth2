@@ -1,4 +1,4 @@
-import type { Plugin } from "payload/config";
+import type { Plugin } from "payload";
 import { modifyAuthCollection } from "./modify-auth-collection";
 import type { PluginTypes } from "./types";
 

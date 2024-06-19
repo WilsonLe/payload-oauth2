@@ -1,4 +1,4 @@
-import { CollectionConfig } from "payload/types";
+import { CollectionConfig } from "payload";
 import { createAuthorizeEndpoint } from "./authorize-endpoint";
 import { createCallbackEndpoint } from "./callback-endpoint";
 import { PluginTypes } from "./types";

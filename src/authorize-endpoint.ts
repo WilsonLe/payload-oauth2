@@ -1,4 +1,4 @@
-import { Endpoint } from "payload/config";
+import { Endpoint } from "payload";
 import { PluginTypes } from "./types";
 
 export const createAuthorizeEndpoint = (

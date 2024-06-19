@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { generatePayloadCookie, getFieldsToSign } from "payload/auth";
-import { Endpoint } from "payload/config";
+import { generatePayloadCookie, getFieldsToSign, Endpoint } from "payload";
 import { PluginTypes } from "./types";
 
 export const createCallbackEndpoint = (
