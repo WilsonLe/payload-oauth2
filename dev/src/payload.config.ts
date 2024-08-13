@@ -1,7 +1,7 @@
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";
-import { buildConfig } from "payload/config";
+import { buildConfig } from "payload";
 import sharp from "sharp";
 import { OAuth2Plugin } from "../../src/plugin";
 import Users from "./collections/Users";
@@ -16,6 +16,7 @@ export default buildConfig({
   plugins: [
     OAuth2Plugin({
       enabled: true,
+      useEmailAsIdentity: true,
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
@@ -30,13 +31,17 @@ export default buildConfig({
       getUserInfo: async (accessToken: string) => {
         const response = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
-          { headers: { Authorization: `Bearer ${accessToken}` } }
+          { headers: { Authorization: `Bearer ${accessToken}` } },
         );
         const user = await response.json();
         return { email: user.email, sub: user.sub };
       },
-      successRedirect: () => "/admin",
-      failureRedirect: () => "/login",
+      successRedirect: (req) => {
+        return "/admin";
+      },
+      failureRedirect: (req, err) => {
+        return "/admin/login";
+      },
       OAuthLoginButton, // a simple link to authorization path
     }),
   ],

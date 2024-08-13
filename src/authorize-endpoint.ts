@@ -2,7 +2,7 @@ import { Endpoint } from "payload";
 import { PluginTypes } from "./types";
 
 export const createAuthorizeEndpoint = (
-  pluginOptions: PluginTypes
+  pluginOptions: PluginTypes,
 ): Endpoint => ({
   method: "get",
   path: pluginOptions.authorizePath || "/oauth/authorize",
@@ -11,7 +11,7 @@ export const createAuthorizeEndpoint = (
     const authCollection = pluginOptions.authCollection || "users";
     const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
     const redirectUri = encodeURIComponent(
-      `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`
+      `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`,
     );
     const scope = encodeURIComponent(pluginOptions.scopes.join(" "));
     const responseType = "code";

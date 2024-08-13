@@ -1,6 +1,6 @@
 html,
 body {
-  font-family: 'Roboto', 'Inter', sans-serif;
+  font-family: "Roboto", "Inter", sans-serif;
 }
 
 .container {
@@ -17,7 +17,14 @@ h1 {
 .rainbow {
   font-family: monospace;
   letter-spacing: 5px;
-  background: linear-gradient(to right, #6666ff, #0099ff, #00ff00, #ff3399, #6666ff);
+  background: linear-gradient(
+    to right,
+    #6666ff,
+    #0099ff,
+    #00ff00,
+    #ff3399,
+    #6666ff
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

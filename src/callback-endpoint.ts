@@ -1,10 +1,10 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { generatePayloadCookie, getFieldsToSign, Endpoint } from "payload";
+import { Endpoint, generatePayloadCookie, getFieldsToSign } from "payload";
 import { PluginTypes } from "./types";
 
 export const createCallbackEndpoint = (
-  pluginOptions: PluginTypes
+  pluginOptions: PluginTypes,
 ): Endpoint => ({
   method: "get",
   path: pluginOptions.callbackPath || "/oauth/callback",
@@ -13,7 +13,7 @@ export const createCallbackEndpoint = (
       const { code } = req.query;
       if (typeof code !== "string")
         throw new Error(
-          `Code not in query string: ${JSON.stringify(req.query)}`
+          `Code not in query string: ${JSON.stringify(req.query)}`,
         );
 
       // /////////////////////////////////////
@@ -119,7 +119,7 @@ export const createCallbackEndpoint = (
               user,
             })) || user;
         },
-        Promise.resolve()
+        Promise.resolve(),
       );
 
       // /////////////////////////////////////
@@ -153,7 +153,7 @@ export const createCallbackEndpoint = (
               user,
             })) || user;
         },
-        Promise.resolve()
+        Promise.resolve(),
       );
 
       // /////////////////////////////////////

@@ -1,19 +1,20 @@
-import Example from '../../components/Example'
-import Link from 'next/link'
-import React from 'react'
+import Link from "next/link";
 
 const Page = () => {
   return (
-    <article className={['container'].filter(Boolean).join(' ')}>
+    <article className={["container"].filter(Boolean).join(" ")}>
       <h1>
         Payload 3.0 <span className="rainbow">BETA</span>!
       </h1>
       <p>
-        This BETA is rapidly evolving, you can report any bugs against{' '}
-        <a href="https://github.com/payloadcms/payload-3.0-demo/issues" target="_blank">
+        This BETA is rapidly evolving, you can report any bugs against{" "}
+        <a
+          href="https://github.com/payloadcms/payload-3.0-demo/issues"
+          target="_blank"
+        >
           the repo
-        </a>{' '}
-        or in the{' '}
+        </a>{" "}
+        or in the{" "}
         <a
           href="https://discord.com/channels/967097582721572934/1215659716538273832"
           target="_blank"
@@ -32,11 +33,9 @@ const Page = () => {
       <p>
         <Link href="/my-route" target="_blank">
           /my-route
-        </Link>{' '}
+        </Link>{" "}
         contains an example of a custom route running the Local API.
       </p>
-
-      <Example />
 
       <p>You can use the Local API in your server components like this:</p>
       <pre>
@@ -51,7 +50,7 @@ const data = await payload.find({
         </code>
       </pre>
     </article>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

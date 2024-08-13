@@ -98,7 +98,6 @@ typings/
 # dotenv environment variables file
 .env
 
-
 ### SublimeText ###
 # cache files for sublime text
 *.tmlanguage.cache
@@ -247,3 +246,5 @@ dev/generated-schema.graphql
 dist
 
 dev/src/uploads
+
+.data

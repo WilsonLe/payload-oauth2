@@ -1,0 +1,10 @@
+{
+  "configurations": [
+    {
+      "name": "Payload OAuth 2",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm dev"
+    }
+  ]
+}
