@@ -12,25 +12,6 @@ export const OAuth2Plugin =
     }
 
     // /////////////////////////////////////
-    // Modify admin panel
-    // /////////////////////////////////////
-    const afterLogin = config.admin?.components?.afterLogin || [];
-    if (pluginOptions.OAuthLoginButton) {
-      afterLogin.push(pluginOptions.OAuthLoginButton);
-    }
-
-    config.admin = {
-      ...(config.admin || {}),
-
-      // Add additional admin config here
-      components: {
-        ...(config.admin?.components || {}),
-        // Add additional admin components here
-        afterLogin,
-      },
-    };
-
-    // /////////////////////////////////////
     // Modify auth collection
     // /////////////////////////////////////
     const authCollectionSlug = pluginOptions.authCollection || "users";
