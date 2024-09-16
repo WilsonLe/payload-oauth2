@@ -31,7 +31,8 @@
     "lint:fix": "eslint --fix --ext .ts,.tsx src",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "clean": "rimraf dist && rimraf dev/.next",
-    "prepublishOnly": "pnpm clean && pnpm build"
+    "prepublishOnly": "pnpm clean && pnpm build",
+    "prepare": "tsc"
   },
   "author": "wilsonle2907@gmail.com",
   "license": "MIT",
