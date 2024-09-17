@@ -31,6 +31,16 @@ Integrating Google OAuth2 to `users` collection.
 ```ts
 export default buildConfig({
   // ...
+  admin: {
+    importMap: { baseDir: path.resolve(dirname) },
+    components: {
+      // A simple button with <a> tag that links to your authorization path
+      // which defaults to /api/users/oauth/authorize
+      afterLogin: ["app/components/OAuthLoginButton#OAuthLoginButton"],
+    },
+    user: "users", // assuming you already have a users collection with auth enabled
+  },
+  // ...
   plugins: [
     OAuth2Plugin({
       enabled: true,
@@ -48,14 +58,13 @@ export default buildConfig({
       getUserInfo: async (accessToken: string) => {
         const response = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
-          { headers: { Authorization: `Bearer ${accessToken}` } }
+          { headers: { Authorization: `Bearer ${accessToken}` } },
         );
         const user = await response.json();
         return { email: user.email, sub: user.sub };
       },
       successRedirect: () => "/admin",
       failureRedirect: () => "/login",
-      OAuthLoginButton, // a simple link to authorization path (/api/users/oauth/authorize)
     }),
   ],
   // ...

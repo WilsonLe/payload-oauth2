@@ -8,6 +8,11 @@ export interface PluginTypes {
   enabled?: boolean;
 
   /**
+   * Name of the strategy
+   */
+  strategyName: string;
+
+  /**
    * Use email as identity. If true, the user's email will be used as the
    * single identity for the user. This allows users to log in with different
    * OAuth providers using the same email.
