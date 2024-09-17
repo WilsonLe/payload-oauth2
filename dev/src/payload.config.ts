@@ -2,13 +2,13 @@ import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";
 import { buildConfig } from "payload";
-import { fileURLToPath } from 'url';
 import sharp from "sharp";
+import { fileURLToPath } from "url";
 import { OAuth2Plugin } from "../../src/plugin";
 import Users from "./collections/Users";
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || "super-secret",
@@ -17,7 +17,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterLogin: ['app/components/OAuthLoginButton#OAuthLoginButton'],
+      afterLogin: ["app/components/OAuthLoginButton#OAuthLoginButton"],
     },
     user: Users.slug,
   },

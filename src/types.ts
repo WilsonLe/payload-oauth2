@@ -106,7 +106,7 @@ export interface PluginTypes {
    */
   failureRedirect: (
     req: PayloadRequest,
-    error?: unknown
+    error?: unknown,
   ) => string | Promise<string>;
 
   OAuthLoginButton?: React.ComponentType;

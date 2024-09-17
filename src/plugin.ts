@@ -17,22 +17,22 @@ export const OAuth2Plugin =
     const authCollectionSlug = pluginOptions.authCollection || "users";
     const subFieldName = pluginOptions.subFieldName || "sub";
     const authCollection = config.collections?.find(
-      (collection) => collection.slug === authCollectionSlug
+      (collection) => collection.slug === authCollectionSlug,
     );
     if (!authCollection) {
       throw new Error(
-        `The collection with the slug "${authCollectionSlug}" was not found.`
+        `The collection with the slug "${authCollectionSlug}" was not found.`,
       );
     }
     const modifiedAuthCollection = modifyAuthCollection(
       pluginOptions,
       authCollection,
-      subFieldName
+      subFieldName,
     );
 
     config.collections = [
       ...(config.collections?.filter(
-        (collection) => collection.slug !== authCollectionSlug
+        (collection) => collection.slug !== authCollectionSlug,
       ) || []),
       modifiedAuthCollection,
     ];

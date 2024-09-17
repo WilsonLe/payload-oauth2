@@ -1,9 +1,15 @@
-import { AuthStrategy, AuthStrategyResult, type CollectionConfig, type CollectionSlug, type User} from "payload";
+import crypto from "crypto";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import {
+  AuthStrategy,
+  AuthStrategyResult,
+  type CollectionConfig,
+  type CollectionSlug,
+  type User,
+} from "payload";
 import { createAuthorizeEndpoint } from "./authorize-endpoint";
 import { createCallbackEndpoint } from "./callback-endpoint";
 import { PluginTypes } from "./types";
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import crypto from 'crypto';
 
 export const modifyAuthCollection = (
   pluginOptions: PluginTypes,
@@ -37,7 +43,7 @@ export const modifyAuthCollection = (
 
   const authStrategy: AuthStrategy = {
     name: "oauth",
-    authenticate:  async ({ headers, payload }):Promise<AuthStrategyResult> => {
+    authenticate: async ({ headers, payload }): Promise<AuthStrategyResult> => {
       const cookieMap = new Map<string, string>();
       const cookie = headers.get("Cookie");
       if (cookie) {
@@ -52,7 +58,7 @@ export const modifyAuthCollection = (
               cookieMap.set(key, decodedValue);
             } catch (e) {
               return { user: null };
-          }
+            }
           }
         });
         // Create a hash from the secret and verify the token
@@ -76,32 +82,35 @@ export const modifyAuthCollection = (
         }
 
         // Find the user by email from the verified jwt token
-        if (typeof jwtUser !== 'string' && jwtUser.email) {
-        const usersQuery = await payload.find({
-          collection: payload.config.admin.user as CollectionSlug,
-          where: {
-            email: {
-              equals: jwtUser.email,
+        if (typeof jwtUser !== "string" && jwtUser.email) {
+          const usersQuery = await payload.find({
+            collection: payload.config.admin.user as CollectionSlug,
+            where: {
+              email: {
+                equals: jwtUser.email,
+              },
             },
-          },
-        });
+          });
 
-        user = usersQuery.docs[0] as User;
-        user.collection = payload.config.admin.user;
+          user = usersQuery.docs[0] as User;
+          user.collection = payload.config.admin.user;
 
-        // Return the user object
-        return { user: user };
+          // Return the user object
+          return { user: user };
+        } else {
+          return { user: null };
+        }
       } else {
         return { user: null };
       }
-    } else {
-      return { user: null };
-    }
     },
   };
 
   let strategies: AuthStrategy[] = [];
-  if (typeof existingCollectionConfig.auth === 'object' && existingCollectionConfig.auth !== null) {
+  if (
+    typeof existingCollectionConfig.auth === "object" &&
+    existingCollectionConfig.auth !== null
+  ) {
     strategies = existingCollectionConfig.auth.strategies || [];
   }
   strategies.push(authStrategy as AuthStrategy);
@@ -117,7 +126,10 @@ export const modifyAuthCollection = (
     fields,
     endpoints,
     auth: {
-      ...(typeof existingCollectionConfig.auth === 'object' && existingCollectionConfig.auth !== null ? existingCollectionConfig.auth : {}),
+      ...(typeof existingCollectionConfig.auth === "object" &&
+      existingCollectionConfig.auth !== null
+        ? existingCollectionConfig.auth
+        : {}),
       strategies,
     },
   };
