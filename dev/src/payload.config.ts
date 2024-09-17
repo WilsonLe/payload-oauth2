@@ -2,17 +2,29 @@ import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";
 import { buildConfig } from "payload";
+import { fileURLToPath } from 'url';
 import sharp from "sharp";
 import { OAuth2Plugin } from "../../src/plugin";
 import Users from "./collections/Users";
-import { OAuthLoginButton } from "./components/OAuthLoginButton";
+
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || "super-secret",
-  admin: { user: Users.slug },
+  admin: {
+    importMap: {
+      baseDir: path.resolve(dirname),
+    },
+    components: {
+      afterLogin: ['app/components/OAuthLoginButton#OAuthLoginButton'],
+    },
+    user: Users.slug,
+  },
+  db: mongooseAdapter({ url: process.env.DATABASE_URI || "" }),
   editor: lexicalEditor({}),
   collections: [Users],
-  typescript: { outputFile: path.resolve(__dirname, "payload-types.ts") },
+  typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   plugins: [
     OAuth2Plugin({
       enabled: true,
@@ -42,9 +54,7 @@ export default buildConfig({
       failureRedirect: (req, err) => {
         return "/admin/login";
       },
-      OAuthLoginButton, // a simple link to authorization path
     }),
   ],
-  db: mongooseAdapter({ url: process.env.DATABASE_URI || "" }),
   sharp,
 });
