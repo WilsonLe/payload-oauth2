@@ -13,6 +13,7 @@ export const modifyAuthCollection = (
   // modify fields
   // /////////////////////////////////////
 
+  // add sub fields
   const fields = existingCollectionConfig.fields || [];
   const existingSubField = fields.find(
     (field) => "name" in field && field.name === subFieldName,
@@ -28,6 +29,29 @@ export const modifyAuthCollection = (
         update: () => false,
       },
     });
+  }
+
+  // add email field if disableLocalStrategy is set
+  // and we don't have an email field
+  if (
+    typeof existingCollectionConfig.auth !== "boolean" &&
+    existingCollectionConfig.auth !== undefined &&
+    existingCollectionConfig.auth.disableLocalStrategy === true &&
+    pluginOptions.useEmailAsIdentity === true &&
+    fields.every((field: any) => field.name !== "email")
+  ) {
+    const existingEmailField = fields.find(
+      (field) => "name" in field && field.name === "email",
+    );
+    if (!existingEmailField) {
+      fields.push({
+        name: "email",
+        type: "email",
+        required: true,
+        unique: true,
+        index: true,
+      });
+    }
   }
 
   // /////////////////////////////////////
