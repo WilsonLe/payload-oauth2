@@ -1,6 +1,6 @@
 {
   "name": "payload-oauth2",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "homepage:": "https://payloadcms.com",
   "repository": "https://github.com/WilsonLe/payload-oauth2",
