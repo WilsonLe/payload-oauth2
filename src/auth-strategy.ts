@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
+import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { AuthStrategy, AuthStrategyResult, User, parseCookies } from "payload";
 import { PluginTypes } from "./types";
 
@@ -13,15 +13,21 @@ export const createAuthStrategy = (
       const cookie = parseCookies(headers);
       const token = cookie.get(`${payload.config.cookiePrefix}-token`);
       if (!token) return { user: null };
-      const jwtUser = jwt.verify(
-        token,
-        crypto
-          .createHash("sha256")
-          .update(payload.config.secret)
-          .digest("hex")
-          .slice(0, 32),
-        { algorithms: ["HS256"] },
-      );
+      let jwtUser: jwt.JwtPayload | string;
+      try {
+        jwtUser = jwt.verify(
+          token,
+          crypto
+            .createHash("sha256")
+            .update(payload.config.secret)
+            .digest("hex")
+            .slice(0, 32),
+          { algorithms: ["HS256"] },
+        );
+      } catch (e) {
+        if (e instanceof TokenExpiredError) return { user: null };
+        throw e;
+      }
       if (typeof jwtUser === "string") return { user: null };
 
       // Find the user by email from the verified jwt token
