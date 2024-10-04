@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import jwt, { TokenExpiredError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { AuthStrategy, AuthStrategyResult, User, parseCookies } from "payload";
 import { PluginTypes } from "./types";
 
@@ -25,7 +25,7 @@ export const createAuthStrategy = (
           { algorithms: ["HS256"] },
         );
       } catch (e) {
-        if (e instanceof TokenExpiredError) return { user: null };
+        if (e instanceof jwt.TokenExpiredError) return { user: null };
         throw e;
       }
       if (typeof jwtUser === "string") return { user: null };
