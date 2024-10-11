@@ -58,6 +58,7 @@ export const createCallbackEndpoint = (
       // get user info
       // /////////////////////////////////////
       const userInfo = await pluginOptions.getUserInfo(access_token);
+      console.log("userInfo", userInfo);
 
       // /////////////////////////////////////
       // ensure user exists
@@ -81,6 +82,7 @@ export const createCallbackEndpoint = (
         });
       }
 
+      console.log("existingUser", existingUser);
       let user: any;
       if (existingUser.docs.length === 0) {
         user = await req.payload.create({
@@ -103,6 +105,7 @@ export const createCallbackEndpoint = (
         });
       }
 
+      console.log("user", user);
       // /////////////////////////////////////
       // beforeLogin - Collection
       // /////////////////////////////////////
