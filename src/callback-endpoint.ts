@@ -126,7 +126,7 @@ export const createCallbackEndpoint = (
       // login - OAuth2
       // /////////////////////////////////////
       const fieldsToSign = getFieldsToSign({
-        collectionConfig: collectionConfig,
+        collectionConfig,
         email: user.email,
         user,
       });
