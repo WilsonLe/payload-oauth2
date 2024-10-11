@@ -181,6 +181,7 @@ export const createCallbackEndpoint = (
         status: 302,
       });
     } catch (error) {
+      console.log("error", error);
       // /////////////////////////////////////
       // failure redirect
       // /////////////////////////////////////
