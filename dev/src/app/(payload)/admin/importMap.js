@@ -1,5 +1,5 @@
-import { OAuthLoginButton as OAuthLoginButton_0 } from '../../../components/OAuthLoginButton'
+import { OAuthLoginButton as OAuthLoginButton_0 } from 'src/components/OAuthLoginButton'
 
 export const importMap = {
-  "app/components/OAuthLoginButton#OAuthLoginButton": OAuthLoginButton_0
+  "./components/OAuthLoginButton#OAuthLoginButton": OAuthLoginButton_0
 }

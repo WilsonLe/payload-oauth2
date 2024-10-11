@@ -126,7 +126,7 @@ export const createCallbackEndpoint = (
       // login - OAuth2
       // /////////////////////////////////////
       const fieldsToSign = getFieldsToSign({
-        collectionConfig,
+        collectionConfig: collectionConfig,
         email: user.email,
         user,
       });
@@ -165,8 +165,8 @@ export const createCallbackEndpoint = (
       // generate and set cookie
       // /////////////////////////////////////
       const cookie = generatePayloadCookie({
-        collectionConfig,
-        payload: req.payload,
+        collectionAuthConfig: collectionConfig.auth,
+        cookiePrefix: "payload",
         token,
       });
 
