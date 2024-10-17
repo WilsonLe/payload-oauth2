@@ -1,6 +1,6 @@
 import { runCommand } from "./test-utils";
 
-jest.setTimeout(1000 * 60 * 60); // 1 hour
+jest.setTimeout(1000 * 60 * 5); // 5 minutes
 describe("Plugin tests", () => {
   let stopServer: (() => void) | null = null;
   let serverResult: Promise<string> | null = null;

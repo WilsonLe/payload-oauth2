@@ -7,6 +7,7 @@ export function runCommand(
 ) {
   const cmdProcess: ChildProcess = spawn(command, args, {
     stdio: ["inherit", "pipe", "pipe"],
+    detached: true, // Ensure a new process group is created
   });
 
   let output = "";
@@ -37,7 +38,9 @@ export function runCommand(
       });
     }),
     stop: () => {
-      cmdProcess.kill(); // This will stop the process
+      if (cmdProcess.pid) {
+        process.kill(-cmdProcess.pid);
+      }
     },
   };
 }
