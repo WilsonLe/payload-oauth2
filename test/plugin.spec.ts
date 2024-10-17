@@ -33,7 +33,9 @@ describe("Plugin tests", () => {
   });
 
   afterAll(async () => {
+    console.info("Stopping server");
     stopServer?.();
     await serverResult;
+    console.info("Server stopped");
   });
 });
