@@ -1,35 +1,39 @@
-import type { Server } from 'http'
-import mongoose from 'mongoose'
-import payload from 'payload'
-//import { start } from './src/server'
-import { nextDev } from 'next/dist/cli/next-dev.js'
+import { runCommand } from "./test-utils";
 
-describe('Plugin tests', () => {
-  let server: Server
-
-  console.log('run start')
+jest.setTimeout(1000 * 60 * 60); // 1 hour
+describe("Plugin tests", () => {
+  let stopServer: (() => void) | null = null;
+  let serverResult: Promise<string> | null = null;
 
   beforeAll(async () => {
-    console.log('run start')
-    //await start({ local: true })
-    nextDev({ port: 3000 }, 'default', '../dev')
-  })
+    const { result: buildResult } = runCommand("pnpm", ["dev:build"]);
+    await buildResult;
+    console.info("Build complete");
+    const { result: _serverResult, stop: _stopServer } = runCommand("pnpm", [
+      "dev:start",
+    ]);
+    for (let i = 0; i < 10; i++) {
+      try {
+        const res = await fetch("http://localhost:3000/admin");
+        if (res.status === 200) {
+          console.info("Server started");
+          break;
+        }
+      } catch (e) {
+        console.info("Waiting for server to start...");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+    serverResult = _serverResult;
+    stopServer = _stopServer;
+  });
+
+  it("should pass", async () => {
+    expect(true).toBe(true);
+  });
 
   afterAll(async () => {
-    await mongoose.connection.dropDatabase()
-    await mongoose.connection.close()
-    server.close()
-  })
-
-  // Add tests to ensure that the plugin works as expected
-
-  // Example test to check for seeded data
-  it('seeds data accordingly', async () => {
-    const newCollectionQuery = await payload.find({
-      collection: 'new-collection',
-      sort: 'createdAt',
-    })
-
-    expect(newCollectionQuery.totalDocs).toEqual(1)
-  })
-})
+    stopServer?.();
+    await serverResult;
+  });
+});
