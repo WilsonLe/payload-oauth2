@@ -1,4 +1,4 @@
-import { mongooseAdapter } from "@payloadcms/db-mongodb";
+import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";
 import { buildConfig } from "payload";
@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { OAuth2Plugin } from "../../src/plugin";
 import Users from "./collections/Users";
+import { migrations } from "./migrations";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -21,7 +22,11 @@ export default buildConfig({
     },
     user: Users.slug,
   },
-  db: mongooseAdapter({ url: process.env.DATABASE_URI || "" }),
+  db: sqliteAdapter({
+    client: { url: process.env.DATABASE_URI || "file:./payload-oauth2.db" },
+    migrationDir: path.resolve(dirname, "migrations"),
+    prodMigrations: migrations,
+  }),
   editor: lexicalEditor({}),
   collections: [Users],
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
