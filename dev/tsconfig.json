@@ -21,9 +21,5 @@
     "target": "ES2017"
   },
   "include": ["src", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "dist", "build"],
-  "ts-node": {
-    "transpileOnly": true,
-    "swc": true
-  }
+  "exclude": ["node_modules", "dist", "build"]
 }
