@@ -21,10 +21,11 @@
   ],
   "scripts": {
     "dev": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev:build": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next build",
     "build": "tsc",
     "test": "cd test && jest --config=./jest.config.js",
     "lint": "eslint src",
-    "format": "prettier --write src",
+    "format": "prettier --write src dev",
     "payload": "cd dev && cross-env NODE_OPTIONS=--no-deprecation payload",
     "dev:lint": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next lint",
     "generate:types": "payload generate:types",

@@ -28,6 +28,7 @@ export default buildConfig({
   plugins: [
     OAuth2Plugin({
       enabled: true,
+      strategyName: "google",
       useEmailAsIdentity: true,
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
       clientId: process.env.GOOGLE_CLIENT_ID || "",
