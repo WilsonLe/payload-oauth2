@@ -30,7 +30,7 @@ export function runCommand(
       });
 
       cmdProcess.on("close", (code) => {
-        if (code === 0) {
+        if (code === 0 || code === null) {
           resolve(output); // Return captured output
         } else {
           reject(new Error(`Command failed with code: ${code}`));
