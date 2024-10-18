@@ -22,6 +22,7 @@ export const createCallbackEndpoint = (
       const subFieldName = pluginOptions.subFieldName || "sub";
       const authCollection = pluginOptions.authCollection || "users";
       const collectionConfig = req.payload.collections[authCollection].config;
+      const payloadConfig = req.payload.config;
       const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
       const redirectUri = `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
       const useEmailAsIdentity = pluginOptions.useEmailAsIdentity ?? false;
@@ -166,7 +167,7 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       const cookie = generatePayloadCookie({
         collectionAuthConfig: collectionConfig.auth,
-        cookiePrefix: "payload",
+        cookiePrefix: payloadConfig.cookiePrefix,
         token,
       });
 
