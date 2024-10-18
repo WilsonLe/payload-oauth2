@@ -35,7 +35,6 @@ export default buildConfig({
       clientSecret: process.env.CLIENT_SECRET || "",
       authCollection: "users",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
-      prompt: "select_account",
       scopes: [
         "openid",
         "https://www.googleapis.com/auth/userinfo.email",
