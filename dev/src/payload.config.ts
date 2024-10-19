@@ -31,13 +31,19 @@ export default buildConfig({
   collections: [Users],
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   plugins: [
+    ////////////////////////////////////////////////////////////////////////////
+    // Google OAuth
+    ////////////////////////////////////////////////////////////////////////////
     OAuth2Plugin({
-      enabled: true,
+      enabled:
+        typeof process.env.GOOGLE_CLIENT_ID === "string" &&
+        typeof process.env.GOOGLE_CLIENT_SECRET === "string",
       strategyName: "google",
       useEmailAsIdentity: true,
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorizePath: "/oauth/google",
       authCollection: "users",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
       scopes: [

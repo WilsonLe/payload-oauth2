@@ -87,7 +87,7 @@ export interface PluginTypes {
    * Path to the authorize endpoint.
    * Must start with a forward slash.
    * Must NOT have a trailing slash.
-   * This path will have /api/<auth-collection-slug> prepended to it.
+   * This path will have /api/[auth-collection-slug] prepended to it.
    * @default "/oauth/authorize"
    */
   authorizePath?: string;
@@ -96,7 +96,7 @@ export interface PluginTypes {
    * Path to the callback endpoint.
    * Must start with a forward slash.
    * Must NOT have a trailing slash.
-   * This path will have /api/<auth-collection-slug> prepended to it.
+   * This path will have /api/[auth-collection-slug] prepended to it.
    * @default "/oauth/callback"
    */
   callbackPath?: string;
@@ -113,8 +113,6 @@ export interface PluginTypes {
     req: PayloadRequest,
     error?: unknown,
   ) => string | Promise<string>;
-
-  OAuthLoginButton?: React.ComponentType;
 }
 
 export interface NewCollectionTypes {

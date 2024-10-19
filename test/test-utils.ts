@@ -14,7 +14,7 @@ export function runCommand(
 
   return {
     process: cmdProcess, // Expose the process so you can access it later
-    result: new Promise<string>((resolve, reject) => {
+    result: new Promise<string | null>((resolve, reject) => {
       // Capture and log stdout
       cmdProcess.stdout?.on("data", (data) => {
         const dataString = data.toString();
@@ -33,13 +33,13 @@ export function runCommand(
         if (code === 0 || code === null) {
           resolve(output); // Return captured output
         } else {
-          reject(new Error(`Command failed with code: ${code}`));
+          resolve(null);
         }
       });
     }),
     stop: () => {
-      if (cmdProcess.pid) {
-        process.kill(-cmdProcess.pid);
+      if (cmdProcess.pid && !cmdProcess.killed) {
+        cmdProcess.kill();
       }
     },
   };
