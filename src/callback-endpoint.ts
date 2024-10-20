@@ -1,6 +1,11 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { Endpoint, generatePayloadCookie, getFieldsToSign } from "payload";
+import {
+  CollectionSlug,
+  Endpoint,
+  generatePayloadCookie,
+  getFieldsToSign,
+} from "payload";
 import { PluginTypes } from "./types";
 
 export const createCallbackEndpoint = (
@@ -20,7 +25,8 @@ export const createCallbackEndpoint = (
       // shorthands
       // /////////////////////////////////////
       const subFieldName = pluginOptions.subFieldName || "sub";
-      const authCollection = pluginOptions.authCollection || "users";
+      const authCollection = (pluginOptions.authCollection ||
+        "users") as CollectionSlug;
       const collectionConfig = req.payload.collections[authCollection].config;
       const payloadConfig = req.payload.config;
       const callbackPath = pluginOptions.callbackPath || "/oauth/callback";

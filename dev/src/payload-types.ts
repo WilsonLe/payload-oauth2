@@ -12,17 +12,17 @@ export interface Config {
   };
   collections: {
     users: User;
-    'payload-locked-documents': PayloadLockedDocument;
-    'payload-preferences': PayloadPreference;
-    'payload-migrations': PayloadMigration;
+    "payload-locked-documents": PayloadLockedDocument;
+    "payload-preferences": PayloadPreference;
+    "payload-migrations": PayloadMigration;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   locale: null;
   user: User & {
-    collection: 'users';
+    collection: "users";
   };
 }
 export interface UserAuthOperations {
@@ -48,7 +48,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   email: string;
   sub?: string | null;
   updatedAt: string;
@@ -59,15 +59,15 @@ export interface User {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: "users";
+    value: number | User;
   } | null;
   globalSlug?: string | null;
   user: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: "users";
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -77,10 +77,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: "users";
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -100,7 +100,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -114,7 +114,6 @@ export interface Auth {
   [k: string]: unknown;
 }
 
-
-declare module 'payload' {
+declare module "payload" {
   export interface GeneratedTypes extends Config {}
 }

@@ -1,4 +1,4 @@
-import { mongooseAdapter } from "@payloadcms/db-mongodb";
+import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import path from "path";
 import { buildConfig } from "payload";
@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { OAuth2Plugin } from "../../src/plugin";
 import Users from "./collections/Users";
+import { migrations } from "./migrations";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -21,18 +22,28 @@ export default buildConfig({
     },
     user: Users.slug,
   },
-  db: mongooseAdapter({ url: process.env.DATABASE_URI || "" }),
+  db: sqliteAdapter({
+    client: { url: process.env.DATABASE_URI || "file:./payload-oauth2.db" },
+    migrationDir: path.resolve(dirname, "migrations"),
+    prodMigrations: migrations,
+  }),
   editor: lexicalEditor({}),
   collections: [Users],
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   plugins: [
+    ////////////////////////////////////////////////////////////////////////////
+    // Google OAuth
+    ////////////////////////////////////////////////////////////////////////////
     OAuth2Plugin({
+      enabled:
+        typeof process.env.GOOGLE_CLIENT_ID === "string" &&
+        typeof process.env.GOOGLE_CLIENT_SECRET === "string",
       strategyName: "google",
-      enabled: true,
       useEmailAsIdentity: true,
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
-      clientId: process.env.CLIENT_ID || "",
-      clientSecret: process.env.CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorizePath: "/oauth/google",
       authCollection: "users",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
       scopes: [

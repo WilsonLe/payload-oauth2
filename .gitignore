@@ -248,4 +248,4 @@ dist
 
 dev/src/uploads
 
-.data
+*.db*
