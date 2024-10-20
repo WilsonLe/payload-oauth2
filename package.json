@@ -38,7 +38,7 @@
   "author": "wilsonle2907@gmail.com",
   "license": "MIT",
   "peerDependencies": {
-    "payload": "3.0.0-beta.110"
+    "payload": "3.0.0-beta.116"
   },
   "devDependencies": {
     "@libsql/darwin-arm64": "0.4.6",

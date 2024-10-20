@@ -28,6 +28,7 @@ export const createCallbackEndpoint = (
       const authCollection = (pluginOptions.authCollection ||
         "users") as CollectionSlug;
       const collectionConfig = req.payload.collections[authCollection].config;
+      const payloadConfig = req.payload.config;
       const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
       const redirectUri = `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
       const useEmailAsIdentity = pluginOptions.useEmailAsIdentity ?? false;
@@ -64,6 +65,7 @@ export const createCallbackEndpoint = (
       // get user info
       // /////////////////////////////////////
       const userInfo = await pluginOptions.getUserInfo(access_token);
+      console.log("userInfo", userInfo);
 
       // /////////////////////////////////////
       // ensure user exists
@@ -87,6 +89,7 @@ export const createCallbackEndpoint = (
         });
       }
 
+      console.log("existingUser", existingUser);
       let user: any;
       if (existingUser.docs.length === 0) {
         user = await req.payload.create({
@@ -109,6 +112,7 @@ export const createCallbackEndpoint = (
         });
       }
 
+      console.log("user", user);
       // /////////////////////////////////////
       // beforeLogin - Collection
       // /////////////////////////////////////
@@ -171,8 +175,8 @@ export const createCallbackEndpoint = (
       // generate and set cookie
       // /////////////////////////////////////
       const cookie = generatePayloadCookie({
-        collectionConfig,
-        payload: req.payload,
+        collectionAuthConfig: collectionConfig.auth,
+        cookiePrefix: payloadConfig.cookiePrefix,
         token,
       });
 
@@ -187,6 +191,7 @@ export const createCallbackEndpoint = (
         status: 302,
       });
     } catch (error) {
+      console.log("error", error);
       // /////////////////////////////////////
       // failure redirect
       // /////////////////////////////////////

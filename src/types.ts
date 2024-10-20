@@ -93,6 +93,16 @@ export interface PluginTypes {
   authorizePath?: string;
 
   /**
+   * Specify the prompt parameter for the OAuth provider.
+   * Google uses this parameter to specify the type of login flow.
+   * The following are prompt values for Google:
+   * - none: Do not display any authentication or consent screens.
+   * - consent: Prompt the user for consent.
+   * - select_account: Prompt the user to select an account.
+   */
+  prompt?: string;
+
+  /**
    * Path to the callback endpoint.
    * Must start with a forward slash.
    * Must NOT have a trailing slash.

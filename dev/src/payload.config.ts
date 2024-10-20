@@ -18,7 +18,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterLogin: ["app/components/OAuthLoginButton#OAuthLoginButton"],
+      afterLogin: ["./components/OAuthLoginButton#OAuthLoginButton"],
     },
     user: Users.slug,
   },
