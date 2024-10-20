@@ -38,8 +38,8 @@ export function runCommand(
       });
     }),
     stop: () => {
-      if (cmdProcess.pid && !cmdProcess.killed) {
-        cmdProcess.kill();
+      if (cmdProcess.pid) {
+        process.kill(-cmdProcess.pid); // Kill the process group
       }
     },
   };
