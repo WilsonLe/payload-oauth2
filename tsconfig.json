@@ -12,7 +12,8 @@
     "declaration": true,
     "declarationDir": "./dist",
     "skipLibCheck": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": "src"
   },
-  "include": ["src/**/*", "dev/src/mocks"]
+  "include": ["src/**/*"]
 }
