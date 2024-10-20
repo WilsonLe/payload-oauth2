@@ -5,7 +5,7 @@ import { runCommand } from "./test-utils";
 dotenv.config();
 
 jest.setTimeout(1000 * 60 * 5); // 5 minutes
-describe("Plugin tests", () => {
+describe("Google OAuth2 Integration", () => {
   let _stopServer: (() => void) | null = null;
   let _serverResult: Promise<string | null> | null = null;
   let _browser: Browser | null = null;
@@ -37,7 +37,7 @@ describe("Plugin tests", () => {
     console.info("Browser started");
   });
 
-  it("Google OAuth", async () => {
+  it("Should work as expected", async () => {
     const GOOGLE_TEST_EMAIL = process.env.GOOGLE_TEST_EMAIL;
     if (typeof GOOGLE_TEST_EMAIL !== "string") {
       throw "GOOGLE_TEST_EMAIL not set";
