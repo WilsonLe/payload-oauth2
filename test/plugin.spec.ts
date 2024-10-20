@@ -52,17 +52,20 @@ describe("Plugin tests", () => {
     const browser = _browser as Browser;
     const page = await browser.newPage();
     await page.goto("http://localhost:3000/api/users/oauth/google");
+    console.info("Navigated to Google OAuth");
 
     // Log in with Google credentials
     await page.waitForSelector("input[type=email]", { visible: true });
     await page.type("input[type=email]", GOOGLE_TEST_EMAIL);
     await page.click("#identifierNext");
     await page.waitForNavigation({ waitUntil: "networkidle2" });
+    console.info("Email entered");
 
     await page.waitForSelector("input[type=password]", { visible: true });
     await page.type("input[type=password]", GOOGLE_TEST_PASSWORD);
     await page.click("#passwordNext");
     await page.waitForNavigation({ waitUntil: "networkidle2" });
+    console.info("Password entered");
 
     // Handle any consent screens or prompts
     try {
@@ -79,6 +82,7 @@ describe("Plugin tests", () => {
           await button.click();
           consentButtonClicked = true;
           await page.waitForNavigation({ waitUntil: "networkidle0" });
+          console.info("Consent button clicked");
           break;
         }
       }
@@ -94,12 +98,14 @@ describe("Plugin tests", () => {
     // Check for successful login by checking 200 response from /api/users/me
     const response = await fetch("http://localhost:3000/api/users/me");
     expect(response.status).toBe(200);
+    console.info("Logged in successfully");
 
     // logout by wiping cookies
     const cookies = await page.cookies();
     for (const cookie of cookies) {
       await page.deleteCookie(cookie);
     }
+    console.info("Cookies deleted");
   });
 
   afterAll(async () => {
