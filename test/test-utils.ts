@@ -1,4 +1,5 @@
 import { ChildProcess, spawn } from "child_process";
+import kill from "tree-kill";
 
 export function runCommand(
   command: string,
@@ -6,8 +7,8 @@ export function runCommand(
   verbose: boolean = false,
 ) {
   const cmdProcess: ChildProcess = spawn(command, args, {
-    stdio: ["inherit", "pipe", "pipe"],
-    detached: true, // Ensure a new process group is created
+    stdio: ["inherit", "pipe"],
+    detached: process.platform !== "win32", // Detached only for non-Windows platforms
   });
 
   let output = "";
@@ -39,7 +40,13 @@ export function runCommand(
     }),
     stop: () => {
       if (cmdProcess.pid) {
-        process.kill(-cmdProcess.pid); // Kill the process group
+        kill(cmdProcess.pid, "SIGTERM", (err) => {
+          if (err) {
+            console.error("Failed to kill process:", err);
+          } else {
+            console.log("Process killed successfully");
+          }
+        });
       }
     },
   };

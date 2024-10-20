@@ -47,11 +47,11 @@
     "@libsql/linux-arm64-musl": "0.4.6",
     "@libsql/linux-x64-gnu": "0.4.6",
     "@libsql/linux-x64-musl": "0.4.6",
-    "@payloadcms/db-sqlite": "3.0.0-beta.110",
-    "@payloadcms/drizzle": "3.0.0-beta.110",
-    "@payloadcms/next": "3.0.0-beta.110",
-    "@payloadcms/richtext-lexical": "3.0.0-beta.110",
-    "@payloadcms/ui": "3.0.0-beta.110",
+    "@payloadcms/db-sqlite": "3.0.0-beta.116",
+    "@payloadcms/drizzle": "3.0.0-beta.116",
+    "@payloadcms/next": "3.0.0-beta.116",
+    "@payloadcms/richtext-lexical": "3.0.0-beta.116",
+    "@payloadcms/ui": "3.0.0-beta.116",
     "@swc/jest": "0.2.36",
     "@types/jest": "29.5.12",
     "@types/jsonwebtoken": "9.0.6",
@@ -64,7 +64,7 @@
     "jsonwebtoken": "9.0.2",
     "libsql": "0.4.6",
     "next": "15.0.0-canary.160",
-    "payload": "3.0.0-beta.110",
+    "payload": "3.0.0-beta.116",
     "prettier": "3.3.2",
     "prettier-plugin-organize-imports": "3.2.4",
     "puppeteer": "^23.6.0",
@@ -72,6 +72,7 @@
     "react-dom": "19.0.0-rc-e740d4b1-20240919",
     "rimraf": "5.0.7",
     "sharp": "0.33.4",
+    "tree-kill": "^1.2.2",
     "typescript": "5.4.5"
   }
 }
