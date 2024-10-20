@@ -16,11 +16,10 @@
 - 🔐 Configures OAuth2 with any providers
 - ✨ Zero dependencies
 - ⚙ Highly customizable
--
 
 # Integrations
 
-Technically this plugin should work with all generic OAuth2 providers. However, here are the list of providers that have been tested:
+Technically this plugin should work with all generic OAuth2 providers. Here are the list of providers that have been tested:
 
 | Provider | Status                                                                                                                                                                                                   | Example                        |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
