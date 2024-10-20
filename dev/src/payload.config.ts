@@ -17,7 +17,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterLogin: ["app/components/OAuthLoginButton#OAuthLoginButton"],
+      afterLogin: ["./components/OAuthLoginButton#OAuthLoginButton"],
     },
     user: Users.slug,
   },
@@ -27,11 +27,12 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   plugins: [
     OAuth2Plugin({
+      strategyName: "google",
       enabled: true,
       useEmailAsIdentity: true,
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.CLIENT_ID || "",
+      clientSecret: process.env.CLIENT_SECRET || "",
       authCollection: "users",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
       scopes: [
