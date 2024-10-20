@@ -1,4 +1,4 @@
-name: Test
+name: Test Google OAuth
 
 on:
   pull_request:
