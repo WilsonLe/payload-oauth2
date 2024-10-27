@@ -46,9 +46,6 @@ export const createCallbackEndpoint = (
 
       if (pluginOptions.getToken) {
         access_token = pluginOptions.getToken(code);
-
-        if (typeof access_token !== "string")
-          throw new Error(`No access token: ${access_token}`);
       } else {
         const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
           method: "POST",
@@ -67,10 +64,10 @@ export const createCallbackEndpoint = (
         const tokenData = await tokenResponse.json();
 
         access_token = tokenData?.access_token;
-
-        if (typeof access_token !== "string")
-          throw new Error(`No access token: ${JSON.stringify(tokenData)}`);
       }
+
+      if (typeof access_token !== "string")
+        throw new Error(`No access token: ${access_token}`);
 
       // /////////////////////////////////////
       // get user info
