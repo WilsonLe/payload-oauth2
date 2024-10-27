@@ -35,8 +35,13 @@ export default buildConfig({
         const user = await response.json();
         return { email: user.email, sub: user.sub };
       },
-      successRedirect: () => "/admin",
-      failureRedirect: () => "/login",
+      successRedirect: (req) => {
+        return "/admin";
+      },
+      failureRedirect: (req, error) => {
+        console.error(error);
+        return "/login";
+      },
     }),
   ],
   // ...
