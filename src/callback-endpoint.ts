@@ -45,7 +45,7 @@ export const createCallbackEndpoint = (
       let access_token: string;
 
       if (pluginOptions.getToken) {
-        access_token = pluginOptions.getToken(code);
+        access_token = await pluginOptions.getToken(code);
       } else {
         const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
           method: "POST",
