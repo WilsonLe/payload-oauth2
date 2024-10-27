@@ -42,24 +42,32 @@ export const createCallbackEndpoint = (
       // obtain access token
       // /////////////////////////////////////
 
-      const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json",
-        },
-        body: new URLSearchParams({
-          code,
-          client_id: pluginOptions.clientId,
-          client_secret: pluginOptions.clientSecret,
-          redirect_uri: redirectUri,
-          grant_type: "authorization_code",
-        }).toString(),
-      });
-      const tokenData = await tokenResponse.json();
-      const access_token = tokenData?.access_token;
+      let access_token: string;
+
+      if (pluginOptions.getToken) {
+        access_token = pluginOptions.getToken(code);
+      } else {
+        const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
+          body: new URLSearchParams({
+            code,
+            client_id: pluginOptions.clientId,
+            client_secret: pluginOptions.clientSecret,
+            redirect_uri: redirectUri,
+            grant_type: "authorization_code",
+          }).toString(),
+        });
+        const tokenData = await tokenResponse.json();
+
+        access_token = tokenData?.access_token;
+      }
+
       if (typeof access_token !== "string")
-        throw new Error(`No access token: ${JSON.stringify(tokenData)}`);
+        throw new Error(`No access token: ${access_token}`);
 
       // /////////////////////////////////////
       // get user info

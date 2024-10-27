@@ -112,6 +112,12 @@ export interface PluginTypes {
   callbackPath?: string;
 
   /**
+   * Function to get token from the OAuth providers.
+   * If its not provided default will be used.
+   */
+  getToken?: (code: string) => string;
+
+  /**
    * Redirect users after successful login.
    */
   successRedirect: (req: PayloadRequest) => string | Promise<string>;
