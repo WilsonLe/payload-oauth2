@@ -115,7 +115,7 @@ export interface PluginTypes {
    * Function to get token from the OAuth providers.
    * If its not provided default will be used.
    */
-  getToken?: (code: string) => Promise<any> | any;
+  getToken?: (code: string) => string;
 
   /**
    * Redirect users after successful login.

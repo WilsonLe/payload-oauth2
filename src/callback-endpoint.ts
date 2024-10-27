@@ -42,10 +42,13 @@ export const createCallbackEndpoint = (
       // obtain access token
       // /////////////////////////////////////
 
-      let tokenData;
+      let access_token: string;
 
       if (pluginOptions.getToken) {
-        tokenData = await pluginOptions.getToken(code);
+        access_token = pluginOptions.getToken(code);
+
+        if (typeof access_token !== "string")
+          throw new Error(`No access token: ${access_token}`);
       } else {
         const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
           method: "POST",
@@ -61,12 +64,13 @@ export const createCallbackEndpoint = (
             grant_type: "authorization_code",
           }).toString(),
         });
-        tokenData = await tokenResponse.json();
-      }
+        const tokenData = await tokenResponse.json();
 
-      const access_token = tokenData?.access_token;
-      if (typeof access_token !== "string")
-        throw new Error(`No access token: ${JSON.stringify(tokenData)}`);
+        access_token = tokenData?.access_token;
+
+        if (typeof access_token !== "string")
+          throw new Error(`No access token: ${JSON.stringify(tokenData)}`);
+      }
 
       // /////////////////////////////////////
       // get user info
