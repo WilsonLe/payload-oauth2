@@ -16,6 +16,7 @@ export default buildConfig({
   plugins: [
     OAuth2Plugin({
       enabled: true,
+      strategyName: "google",
       serverURL: process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
       authCollection: "users", // assuming you already have a users collection with auth enabled
       clientId: process.env.CLIENT_ID || "",
