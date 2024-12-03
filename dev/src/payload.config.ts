@@ -18,7 +18,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterLogin: ["app/components/OAuthLoginButton#OAuthLoginButton"],
+      afterLogin: ["src/components/OAuthLoginButton#OAuthLoginButton"],
     },
     user: Users.slug,
   },
@@ -64,6 +64,7 @@ export default buildConfig({
         return "/admin";
       },
       failureRedirect: (req, err) => {
+        req.payload.logger.error(err);
         return "/admin/login";
       },
     }),

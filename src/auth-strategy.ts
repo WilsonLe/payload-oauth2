@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
+import { JWTPayload, jwtVerify } from "jose";
 import { AuthStrategy, AuthStrategyResult, User, parseCookies } from "payload";
 import { PluginTypes } from "./types";
 
@@ -13,26 +13,35 @@ export const createAuthStrategy = (
       const cookie = parseCookies(headers);
       const token = cookie.get(`${payload.config.cookiePrefix}-token`);
       if (!token) return { user: null };
-      let jwtUser: jwt.JwtPayload | string;
+
+      let jwtUser: JWTPayload | null = null;
       try {
-        jwtUser = jwt.verify(
+        const secret = crypto
+          .createHash("sha256")
+          .update(payload.config.secret)
+          .digest("hex")
+          .slice(0, 32);
+
+        const { payload: verifiedPayload } = await jwtVerify(
           token,
-          crypto
-            .createHash("sha256")
-            .update(payload.config.secret)
-            .digest("hex")
-            .slice(0, 32),
+          new TextEncoder().encode(secret),
           { algorithms: ["HS256"] },
         );
-      } catch (e) {
-        if (e instanceof jwt.TokenExpiredError) return { user: null };
+        jwtUser = verifiedPayload;
+      } catch (e: any) {
+        // Handle token expiration
+        if (e.code === "ERR_JWT_EXPIRED") return { user: null };
         throw e;
       }
-      if (typeof jwtUser === "string") return { user: null };
+      if (!jwtUser) return { user: null };
 
       // Find the user by email from the verified jwt token
-      const userCollection = jwtUser.collection || pluginOptions.authCollection;
+      const userCollection =
+        (typeof jwtUser.collection === "string" && jwtUser.collection) ||
+        pluginOptions.authCollection ||
+        "users";
       let user: User | null = null;
+
       if (pluginOptions.useEmailAsIdentity) {
         if (typeof jwtUser.email !== "string") return { user: null };
         const usersQuery = await payload.find({
