@@ -12,15 +12,21 @@ describe("Google OAuth2 Integration", () => {
 
   beforeAll(async () => {
     const { result: buildResult } = runCommand("pnpm", ["dev:build"]);
-    await buildResult;
-    console.info("Build complete");
+    if ((await buildResult) === null) {
+      throw "Build failed";
+    } else {
+      console.info("Build successful");
+    }
     const { result: serverResult, stop: stopServer } = runCommand("pnpm", [
       "dev:start",
     ]);
-    for (let i = 0; i < 10; i++) {
+    // wait for 30s
+    let serverStarted = false;
+    for (let i = 0; i < 60; i++) {
       try {
         const res = await fetch("http://localhost:3000/admin");
         if (res.status === 200) {
+          serverStarted = true;
           console.info("Server started");
           break;
         }
@@ -28,6 +34,9 @@ describe("Google OAuth2 Integration", () => {
         console.info("Waiting for server to start...");
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
+    }
+    if (!serverStarted) {
+      throw "Server did not start after 30s";
     }
     _stopServer = stopServer;
     _serverResult = serverResult;

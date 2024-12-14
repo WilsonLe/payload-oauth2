@@ -1,11 +1,12 @@
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
 import {
   CollectionSlug,
   Endpoint,
   generatePayloadCookie,
   getFieldsToSign,
 } from "payload";
+import { defaultGetToken } from "./default-get-token";
 import { PluginTypes } from "./types";
 
 export const createCallbackEndpoint = (
@@ -47,23 +48,13 @@ export const createCallbackEndpoint = (
       if (pluginOptions.getToken) {
         access_token = await pluginOptions.getToken(code);
       } else {
-        const tokenResponse = await fetch(pluginOptions.tokenEndpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Accept: "application/json",
-          },
-          body: new URLSearchParams({
-            code,
-            client_id: pluginOptions.clientId,
-            client_secret: pluginOptions.clientSecret,
-            redirect_uri: redirectUri,
-            grant_type: "authorization_code",
-          }).toString(),
-        });
-        const tokenData = await tokenResponse.json();
-
-        access_token = tokenData?.access_token;
+        access_token = await defaultGetToken(
+          pluginOptions.tokenEndpoint,
+          pluginOptions.clientId,
+          pluginOptions.clientSecret,
+          redirectUri,
+          code,
+        );
       }
 
       if (typeof access_token !== "string")
@@ -73,7 +64,6 @@ export const createCallbackEndpoint = (
       // get user info
       // /////////////////////////////////////
       const userInfo = await pluginOptions.getUserInfo(access_token);
-      console.log("userInfo", userInfo);
 
       // /////////////////////////////////////
       // ensure user exists
@@ -97,7 +87,6 @@ export const createCallbackEndpoint = (
         });
       }
 
-      console.log("existingUser", existingUser);
       let user: any;
       if (existingUser.docs.length === 0) {
         user = await req.payload.create({
@@ -120,7 +109,6 @@ export const createCallbackEndpoint = (
         });
       }
 
-      console.log("user", user);
       // /////////////////////////////////////
       // beforeLogin - Collection
       // /////////////////////////////////////
@@ -149,9 +137,10 @@ export const createCallbackEndpoint = (
         user,
       });
 
-      const token = jwt.sign(fieldsToSign, req.payload.secret, {
-        expiresIn: collectionConfig.auth.tokenExpiration,
-      });
+      const token = await new SignJWT(fieldsToSign)
+        .setProtectedHeader({ alg: "HS256" })
+        .setExpirationTime(`${collectionConfig.auth.tokenExpiration} secs`)
+        .sign(new TextEncoder().encode(req.payload.secret));
       req.user = user;
 
       // /////////////////////////////////////
@@ -199,7 +188,6 @@ export const createCallbackEndpoint = (
         status: 302,
       });
     } catch (error) {
-      console.log("error", error);
       // /////////////////////////////////////
       // failure redirect
       // /////////////////////////////////////

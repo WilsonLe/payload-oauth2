@@ -1,6 +1,12 @@
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
-import { AuthStrategy, AuthStrategyResult, User, parseCookies } from "payload";
+import { JWTPayload, jwtVerify } from "jose";
+import {
+  AuthStrategy,
+  AuthStrategyResult,
+  CollectionSlug,
+  User,
+  parseCookies,
+} from "payload";
 import { PluginTypes } from "./types";
 
 export const createAuthStrategy = (
@@ -13,26 +19,37 @@ export const createAuthStrategy = (
       const cookie = parseCookies(headers);
       const token = cookie.get(`${payload.config.cookiePrefix}-token`);
       if (!token) return { user: null };
-      let jwtUser: jwt.JwtPayload | string;
+
+      let jwtUser: JWTPayload | null = null;
       try {
-        jwtUser = jwt.verify(
+        const secret = crypto
+          .createHash("sha256")
+          .update(payload.config.secret)
+          .digest("hex")
+          .slice(0, 32);
+
+        const { payload: verifiedPayload } = await jwtVerify(
           token,
-          crypto
-            .createHash("sha256")
-            .update(payload.config.secret)
-            .digest("hex")
-            .slice(0, 32),
+          new TextEncoder().encode(secret),
           { algorithms: ["HS256"] },
         );
-      } catch (e) {
-        if (e instanceof jwt.TokenExpiredError) return { user: null };
+        jwtUser = verifiedPayload;
+      } catch (e: any) {
+        // Handle token expiration
+        if (e.code === "ERR_JWT_EXPIRED") return { user: null };
         throw e;
       }
-      if (typeof jwtUser === "string") return { user: null };
+      if (!jwtUser) return { user: null };
 
       // Find the user by email from the verified jwt token
-      const userCollection = jwtUser.collection || pluginOptions.authCollection;
+      // coerce userCollection to CollectionSlug because it is already checked
+      // in `modify-auth-collection.ts` that it is a valud collection slug
+      const userCollection = ((typeof jwtUser.collection === "string" &&
+        jwtUser.collection) ||
+        pluginOptions.authCollection ||
+        "users") as CollectionSlug;
       let user: User | null = null;
+
       if (pluginOptions.useEmailAsIdentity) {
         if (typeof jwtUser.email !== "string") return { user: null };
         const usersQuery = await payload.find({
@@ -40,16 +57,14 @@ export const createAuthStrategy = (
           where: { email: { equals: jwtUser.email } },
         });
         if (usersQuery.docs.length === 0) {
+          // coerce to User because `userCollection` is a valid auth collection, checked by `modify-auth-collection.ts` already
           user = (await payload.create({
             collection: userCollection,
-            data: {
-              ...jwtUser,
-              // Stuff breaks when password is missing
-              password: crypto.randomBytes(32).toString("hex"),
-            },
-          })) as User;
+            data: jwtUser as any,
+          })) as unknown as User;
         } else {
-          user = usersQuery.docs[0] as User;
+          // coerce to User because payload warns that some collection may not have property `collection` - i.e. `PayloadMigration;
+          user = usersQuery.docs[0] as unknown as User;
         }
       } else {
         if (typeof jwtUser[subFieldName] !== "string") return { user: null };
@@ -58,16 +73,14 @@ export const createAuthStrategy = (
           where: { [subFieldName]: { equals: jwtUser[subFieldName] } },
         });
         if (usersQuery.docs.length === 0) {
+          // coerce to User because payload warns that some collection may not have property `collection` - i.e. `PayloadMigration;
           user = (await payload.create({
             collection: userCollection,
-            data: {
-              ...jwtUser,
-              // Stuff breaks when password is missing
-              password: crypto.randomBytes(32).toString("hex"),
-            },
-          })) as User;
+            data: jwtUser as any,
+          })) as unknown as User;
         } else {
-          user = usersQuery.docs[0] as User;
+          // coerce to User because payload warns that some collection may not have property `collection` - i.e. `PayloadMigration;
+          user = usersQuery.docs[0] as unknown as User;
         }
       }
       user.collection = userCollection;

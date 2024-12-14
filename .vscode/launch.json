@@ -1,10 +1,18 @@
 {
   "configurations": [
     {
-      "name": "Payload OAuth 2",
+      "name": "Payload OAuth 2 Dev",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/next",
+      "cwd": "${workspaceFolder}/dev",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Payload OAuth 2 Test",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm dev"
+      "command": "pnpm test"
     }
   ]
 }
