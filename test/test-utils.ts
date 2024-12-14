@@ -7,7 +7,7 @@ export function runCommand(
   verbose: boolean = false,
 ) {
   const cmdProcess: ChildProcess = spawn(command, args, {
-    stdio: ["inherit", "pipe"],
+    stdio: ["inherit", "pipe", "pipe"],
     detached: process.platform !== "win32", // Detached only for non-Windows platforms
   });
 

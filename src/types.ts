@@ -113,7 +113,11 @@ export interface PluginTypes {
 
   /**
    * Function to get token from the OAuth providers.
-   * If its not provided default will be used.
+   *
+   * If its not provided default will be used, which requires
+   * tokenEndpoint, clientId, clientSecret, redirectUri, code.
+   *
+   * Reference: `defaultGetToken` in `src/default-get-token.ts`
    */
   getToken?: (code: string) => string | Promise<string>;
 
