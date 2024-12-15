@@ -51,7 +51,7 @@ jobs:
       - run: |
           pnpx puppeteer browsers install chrome
       - run: pnpm install
-      - run: pnpm test
+      - run: pnpm test:google
   test-zitadel-oauth:
     runs-on: ubuntu-latest
     env:
@@ -98,4 +98,4 @@ jobs:
       - run: |
           pnpx puppeteer browsers install chrome
       - run: pnpm install
-      - run: pnpm test
+      - run: pnpm test:zitadel

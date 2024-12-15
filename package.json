@@ -25,6 +25,8 @@
     "dev:start": "cross-env NODE_OPTIONS=--no-deprecation next start dev",
     "build": "tsc",
     "test": "cd test && jest --config=./jest.config.js --runInBand",
+    "test:google": "cd test && jest --config=./jest.config.js test/google.spec.ts",
+    "test:zitadel": "cd test && jest --config=./jest.config.js test/zitadel.spec.ts",
     "format": "prettier --write src dev",
     "payload": "cd dev && cross-env NODE_OPTIONS=--no-deprecation payload",
     "dev:lint": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next lint",
