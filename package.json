@@ -24,7 +24,7 @@
     "dev:build": "cross-env NODE_OPTIONS=--no-deprecation next build dev",
     "dev:start": "cross-env NODE_OPTIONS=--no-deprecation next start dev",
     "build": "tsc",
-    "test": "cd test && jest --config=./jest.config.js",
+    "test": "cd test && jest --config=./jest.config.js --runInBand",
     "format": "prettier --write src dev",
     "payload": "cd dev && cross-env NODE_OPTIONS=--no-deprecation payload",
     "dev:lint": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next lint",

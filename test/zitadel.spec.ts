@@ -5,7 +5,7 @@ import { runCommand } from "./test-utils";
 dotenv.config();
 
 jest.setTimeout(1000 * 60 * 5); // 5 minutes
-describe("Google OAuth2 Integration", () => {
+describe("Zitadel OAuth2 Integration", () => {
   let _stopServer: (() => void) | null = null;
   let _serverResult: Promise<string | null> | null = null;
   let _browser: Browser | null = null;
@@ -47,62 +47,34 @@ describe("Google OAuth2 Integration", () => {
   });
 
   it("Should work as expected", async () => {
-    const GOOGLE_TEST_EMAIL = process.env.GOOGLE_TEST_EMAIL;
-    if (typeof GOOGLE_TEST_EMAIL !== "string") {
-      throw "GOOGLE_TEST_EMAIL not set";
+    const ZITADEL_TEST_EMAIL = process.env.ZITADEL_TEST_EMAIL;
+    if (typeof ZITADEL_TEST_EMAIL !== "string") {
+      throw "ZITADEL_TEST_EMAIL not set";
     }
-    const GOOGLE_TEST_PASSWORD = process.env.GOOGLE_TEST_PASSWORD;
-    if (typeof GOOGLE_TEST_PASSWORD !== "string") {
-      throw "GOOGLE_TEST_PASSWORD not set";
+    const ZITADEL_TEST_PASSWORD = process.env.ZITADEL_TEST_PASSWORD;
+    if (typeof ZITADEL_TEST_PASSWORD !== "string") {
+      throw "ZITADEL_TEST_PASSWORD not set";
     }
     if (typeof _browser === null) {
       throw "Browser not initialized";
     }
     const browser = _browser as Browser;
     const page = await browser.newPage();
-    await page.goto("http://localhost:3000/api/users/oauth/google");
+    await page.goto("http://localhost:3000/api/users/oauth/zitadel");
     console.info("Navigated to Google OAuth");
 
-    // Log in with Google credentials
-    await page.waitForSelector("input[type=email]", { visible: true });
-    await page.type("input[type=email]", GOOGLE_TEST_EMAIL);
-    await page.click("#identifierNext");
+    // Log in with Zitadel credentials
+    await page.waitForSelector("#loginName", { visible: true });
+    await page.type("#loginName", ZITADEL_TEST_EMAIL);
+    await page.click("#submit-button");
     await page.waitForNavigation({ waitUntil: "networkidle2" });
     console.info("Email entered");
 
-    await page.waitForSelector("input[type=password]", { visible: true });
-    await page.type("input[type=password]", GOOGLE_TEST_PASSWORD);
-    await page.click("#passwordNext");
+    await page.waitForSelector("#password", { visible: true });
+    await page.type("#password", ZITADEL_TEST_PASSWORD);
+    await page.click("#submit-button");
     await page.waitForNavigation({ waitUntil: "networkidle2" });
     console.info("Password entered");
-
-    // Handle any consent screens or prompts
-    try {
-      const buttons = await page.$$("button");
-      let consentButtonClicked = false;
-      for (const button of buttons) {
-        const textHandle = await button.getProperty("innerText");
-        const text = await textHandle.jsonValue();
-        if (
-          text &&
-          (text.trim().toLowerCase() === "continue" ||
-            text.trim().toLowerCase() === "accept")
-        ) {
-          await button.click();
-          consentButtonClicked = true;
-          await page.waitForNavigation({ waitUntil: "networkidle0" });
-          console.info("Consent button clicked");
-          break;
-        }
-      }
-      if (!consentButtonClicked) {
-        console.info(
-          "No consent button with text 'Continue' or 'Accept' found.",
-        );
-      }
-    } catch (e) {
-      console.info("Error handling consent screen:", e);
-    }
 
     // Check for successful login by checking 200 response from /api/users/me
     const response = await fetch("http://localhost:3000/api/users/me");
