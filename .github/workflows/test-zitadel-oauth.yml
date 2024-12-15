@@ -1,4 +1,4 @@
-name: Test OAuth
+name: Test Zitadel OAuth
 
 on:
   pull_request:
