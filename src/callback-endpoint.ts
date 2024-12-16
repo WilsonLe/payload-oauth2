@@ -63,7 +63,7 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // get user info
       // /////////////////////////////////////
-      const userInfo = await pluginOptions.getUserInfo(access_token);
+      const userInfo = await pluginOptions.getUserInfo(access_token, req);
 
       // /////////////////////////////////////
       // ensure user exists
