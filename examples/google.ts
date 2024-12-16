@@ -32,7 +32,7 @@ export const googleOAuth = OAuth2Plugin({
     return { email: user.email, sub: user.sub };
   },
   /**
-   * This param is complete optional to demonstrate customize your own
+   * This param is optional to demonstrate how to customize your own
    * `getToken` function (i.e. add hooks to run after getting the token)
    * Leave this blank should you wish to use the default getToken function
    */
