@@ -51,7 +51,12 @@ export const createAuthStrategy = (
       let user: User | null = null;
 
       if (pluginOptions.useEmailAsIdentity) {
-        if (typeof jwtUser.email !== "string") return { user: null };
+        if (typeof jwtUser.email !== "string") {
+          payload.logger.warn(
+            "Using email as identity but no email is found in jwt token",
+          );
+          return { user: null };
+        }
         const usersQuery = await payload.find({
           collection: userCollection,
           where: { email: { equals: jwtUser.email } },
@@ -67,7 +72,12 @@ export const createAuthStrategy = (
           user = usersQuery.docs[0] as unknown as User;
         }
       } else {
-        if (typeof jwtUser[subFieldName] !== "string") return { user: null };
+        if (typeof jwtUser[subFieldName] !== "string") {
+          payload.logger.warn(
+            `No ${subFieldName} found in jwt token. Make sure the jwt token contains the ${subFieldName} field`,
+          );
+          return { user: null };
+        }
         const usersQuery = await payload.find({
           collection: userCollection,
           where: { [subFieldName]: { equals: jwtUser[subFieldName] } },

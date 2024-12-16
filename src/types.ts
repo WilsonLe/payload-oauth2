@@ -70,8 +70,9 @@ export interface PluginTypes {
    * This function should return a promise that resolves to the user
    * information that will be stored in database.
    * @param accessToken Access token obtained from OAuth provider
+   * @param req PayloadRequest object
    */
-  getUserInfo: (accessToken: string) => Promise<any> | any;
+  getUserInfo: (accessToken: string, req: PayloadRequest) => Promise<any> | any;
 
   /**
    * Scope for the OAuth provider.
@@ -118,16 +119,21 @@ export interface PluginTypes {
    * tokenEndpoint, clientId, clientSecret, redirectUri, code.
    *
    * Reference: `defaultGetToken` in `src/default-get-token.ts`
+   * @param code Code obtained from the OAuth provider, used to exchange for access token
+   * @param req PayloadRequest object
    */
   getToken?: (code: string, req: PayloadRequest) => string | Promise<string>;
 
   /**
    * Redirect users after successful login.
+   * @param req PayloadRequest object
    */
   successRedirect: (req: PayloadRequest) => string | Promise<string>;
 
   /**
    * Redirect users after failed login.
+   * @param req PayloadRequest object
+   * @param error Error object
    */
   failureRedirect: (
     req: PayloadRequest,

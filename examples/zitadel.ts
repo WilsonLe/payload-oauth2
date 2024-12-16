@@ -28,7 +28,7 @@ export const zitadelOAuth = OAuth2Plugin({
     "urn:zitadel:iam:user:metadata",
   ],
   providerAuthorizationUrl: process.env.ZITADEL_AUTHORIZATION_URL || "",
-  getUserInfo: async (accessToken: string) => {
+  getUserInfo: async (accessToken: string, req: PayloadRequest) => {
     const response = await fetch(process.env.ZITADEL_USERINFO_ENDPOINT || "", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });

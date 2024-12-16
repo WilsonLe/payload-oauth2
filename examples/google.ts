@@ -23,7 +23,7 @@ export const googleOAuth = OAuth2Plugin({
     "https://www.googleapis.com/auth/userinfo.profile",
   ],
   providerAuthorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
-  getUserInfo: async (accessToken: string) => {
+  getUserInfo: async (accessToken: string, req: PayloadRequest) => {
     const response = await fetch(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       { headers: { Authorization: `Bearer ${accessToken}` } },
