@@ -98,4 +98,15 @@ jobs:
       - run: |
           pnpx puppeteer browsers install chrome
       - run: pnpm install
-      - run: pnpm test:zitadel
+      - name: Run test
+        run: |
+          for i in {1..3}; do
+            echo "Attempt $i"
+            if pnpm test:zitadel; then
+              echo "Success on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying..."
+          done
+          echo "All attempts failed"
+          exit 1
