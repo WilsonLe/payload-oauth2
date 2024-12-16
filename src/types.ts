@@ -119,7 +119,7 @@ export interface PluginTypes {
    *
    * Reference: `defaultGetToken` in `src/default-get-token.ts`
    */
-  getToken?: (code: string) => string | Promise<string>;
+  getToken?: (code: string, req: PayloadRequest) => string | Promise<string>;
 
   /**
    * Redirect users after successful login.
