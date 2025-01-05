@@ -27,6 +27,16 @@ export interface PluginTypes {
    */
   serverURL: string;
 
+  	/**
+	 * Response mode for the OAuth provider.
+	 * Required for Apple OAuth when requesting name or email scope.
+	 * Common values:
+	 * - 'form_post': Response parameters encoded in POST body (required for Apple with name/email scope)
+	 * - 'query': Response parameters encoded in URL query string
+	 * @default undefined
+	 */
+	responseMode?: string
+
   /**
    * Slug of the collection where user information will be stored
    * @default "users"
