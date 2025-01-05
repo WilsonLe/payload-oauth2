@@ -1,38 +1,51 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { SignJWT } from "jose";
-import {
+import type {
   CollectionSlug,
   Endpoint,
-  generatePayloadCookie,
-  getFieldsToSign,
+  PayloadHandler,
+  PayloadRequest,
+  RequestContext,
+  User,
 } from "payload";
+import { generatePayloadCookie, getFieldsToSign } from "payload";
 import { defaultGetToken } from "./default-get-token";
-import { PluginTypes } from "./types";
+import type { PluginTypes } from "./types";
 
 export const createCallbackEndpoint = (
   pluginOptions: PluginTypes,
-): Endpoint => ({
- // Support both GET (default OAuth2) and POST (required for Apple OAuth with form_post)
-	// - GET: Used by most OAuth providers (Google, GitHub, etc.)
-	// - POST: Required by Apple when requesting name/email scopes with response_mode=form_post
-	method: 'post' as const,
-	path: pluginOptions.callbackPath || '/oauth/callback',
-  handler: async (req) => {
+): Endpoint => {
+  const handler: PayloadHandler = async (req: PayloadRequest) => {
     try {
       // Handle authorization code from both GET query params and POST body
       // This enables support for Apple's form_post response mode while maintaining
       // compatibility with traditional OAuth2 GET responses
-      const code = req.method === "POST"
-        ? (req.body)?.code  // Type assertion for body
-				: (req.query)?.code  // Type assertion for query
-      	// Improved error handling to clearly indicate whether we're missing the code
-			// from POST body (Apple OAuth) or GET query parameters (standard OAuth)
-    	if (typeof code !== 'string')
-				throw new Error(
-          `Code not found in ${req.method === 'POST' ? 'body' : 'query'}: ${JSON.stringify(
-						req.method === 'POST' ? req.body : req.query
-					)}`,
-				)
+      let code: string | undefined;
+
+      if (req.method === "POST") {
+        // Handle form data from POST request (used by Apple OAuth)
+        const contentType = req.headers.get("content-type");
+        if (contentType?.includes("application/x-www-form-urlencoded")) {
+          const text = await (req as unknown as Request).text();
+          const formData = new URLSearchParams(text);
+          code = formData.get("code") || undefined;
+        }
+      } else if (req.method === "GET") {
+        // Handle query parameters (used by Google OAuth)
+        code = typeof req.query === "object" && req.query ? (req.query as { code?: string }).code : undefined;
+      }
+
+      // Improved error handling to clearly indicate whether we're missing the code
+      // from POST body (Apple OAuth) or GET query parameters (standard OAuth)
+      if (typeof code !== "string") {
+        throw new Error(
+          `Code not found in ${req.method === "POST" ? "body" : "query"}: ${
+            req.method === "POST"
+              ? "form-data"
+              : JSON.stringify(req.query)
+          }`,
+        );
+      }
 
       // /////////////////////////////////////
       // shorthands
@@ -49,18 +62,17 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // beforeOperation - Collection
       // /////////////////////////////////////
-      // Not implemented
+      // Not implemented - reserved for future use
 
       // /////////////////////////////////////
-      // obtain access token
+      // obtain access token or id_token
       // /////////////////////////////////////
-
-      let access_token: string;
+      let token: string;
 
       if (pluginOptions.getToken) {
-        access_token = await pluginOptions.getToken(code, req);
+        token = await pluginOptions.getToken(code, req);
       } else {
-        access_token = await defaultGetToken(
+        token = await defaultGetToken(
           pluginOptions.tokenEndpoint,
           pluginOptions.clientId,
           pluginOptions.clientSecret,
@@ -69,19 +81,21 @@ export const createCallbackEndpoint = (
         );
       }
 
-      if (typeof access_token !== "string")
-        throw new Error(`No access token: ${access_token}`);
+      if (typeof token !== "string") {
+        throw new Error(`Invalid token response: ${token}`);
+      }
 
       // /////////////////////////////////////
       // get user info
       // /////////////////////////////////////
-      const userInfo = await pluginOptions.getUserInfo(access_token, req);
+      const userInfo = await pluginOptions.getUserInfo(token, req);
 
       // /////////////////////////////////////
       // ensure user exists
       // /////////////////////////////////////
-      let existingUser: any;
+      let existingUser: { docs: Array<Record<string, unknown>> };
       if (useEmailAsIdentity) {
+        // Use email as the unique identifier
         existingUser = await req.payload.find({
           req,
           collection: authCollection,
@@ -90,6 +104,7 @@ export const createCallbackEndpoint = (
           limit: 1,
         });
       } else {
+        // Use provider's sub field as the unique identifier
         existingUser = await req.payload.find({
           req,
           collection: authCollection,
@@ -99,43 +114,53 @@ export const createCallbackEndpoint = (
         });
       }
 
-      let user: any;
-      if (existingUser.docs.length === 0) {
-        user = await req.payload.create({
+      let user = existingUser.docs[0] as User;
+      if (!user) {
+        // Create new user if they don't exist
+        const result = await req.payload.create({
           req,
           collection: authCollection,
           data: {
             ...userInfo,
-            // Stuff breaks when password is missing
+            collection: authCollection,
+            // Generate secure random password for OAuth users
             password: crypto.randomBytes(32).toString("hex"),
           },
           showHiddenFields: true,
         });
+        user = result as User;
       } else {
-        user = await req.payload.update({
+        // Update existing user with latest info from provider
+        const result = await req.payload.update({
           req,
           collection: authCollection,
-          id: existingUser.docs[0].id,
-          data: userInfo,
+          id: user.id,
+          data: {
+            ...userInfo,
+            collection: authCollection,
+          },
           showHiddenFields: true,
         });
+        user = result as User;
       }
 
       // /////////////////////////////////////
       // beforeLogin - Collection
       // /////////////////////////////////////
-
       await collectionConfig.hooks.beforeLogin.reduce(
         async (priorHook, hook) => {
           await priorHook;
 
-          user =
-            (await hook({
-              collection: collectionConfig,
-              context: req.context,
-              req,
-              user,
-            })) || user;
+          const hookResult = await hook({
+            collection: collectionConfig,
+            context: req.context || {} as RequestContext,
+            req,
+            user,
+          });
+
+          if (hookResult) {
+            user = hookResult as User;
+          }
         },
         Promise.resolve(),
       );
@@ -145,11 +170,11 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       const fieldsToSign = getFieldsToSign({
         collectionConfig,
-        email: user.email,
+        email: user.email || "",
         user,
       });
 
-      const token = await new SignJWT(fieldsToSign)
+      const jwtToken = await new SignJWT(fieldsToSign)
         .setProtectedHeader({ alg: "HS256" })
         .setExpirationTime(`${collectionConfig.auth.tokenExpiration} secs`)
         .sign(new TextEncoder().encode(req.payload.secret));
@@ -158,19 +183,21 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // afterLogin - Collection
       // /////////////////////////////////////
-
       await collectionConfig.hooks.afterLogin.reduce(
         async (priorHook, hook) => {
           await priorHook;
 
-          user =
-            (await hook({
-              collection: collectionConfig,
-              context: req.context,
-              req,
-              token,
-              user,
-            })) || user;
+          const hookResult = await hook({
+            collection: collectionConfig,
+            context: req.context || {} as RequestContext,
+            req,
+            token: jwtToken,
+            user,
+          });
+
+          if (hookResult) {
+            user = hookResult as User;
+          }
         },
         Promise.resolve(),
       );
@@ -178,7 +205,7 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // afterRead - Fields
       // /////////////////////////////////////
-      // Not implemented
+      // Not implemented - reserved for future use
 
       // /////////////////////////////////////
       // generate and set cookie
@@ -186,7 +213,7 @@ export const createCallbackEndpoint = (
       const cookie = generatePayloadCookie({
         collectionAuthConfig: collectionConfig.auth,
         cookiePrefix: payloadConfig.cookiePrefix,
-        token,
+        token: jwtToken,
       });
 
       // /////////////////////////////////////
@@ -211,5 +238,13 @@ export const createCallbackEndpoint = (
         status: 302,
       });
     }
-  },
-});
+  };
+
+  return {
+    // We use GET as the primary method since that's what most OAuth providers use
+    // The handler itself will accept both GET and POST internally
+    method: "get",
+    path: pluginOptions.callbackPath || "/oauth/callback",
+    handler,
+  };
+};
