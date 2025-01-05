@@ -4,7 +4,7 @@
   "type": "module",
   "homepage:": "https://payloadcms.com",
   "repository": "https://github.com/WilsonLe/payload-oauth2",
-  "description": "OAuth2 plugin for Payload CMS",
+  "description": "OAuth2 plugin for Payload CMS with Apple Sign In support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "keywords": [
@@ -14,7 +14,8 @@
     "typescript",
     "react",
     "oauth2",
-    "payload-plugin"
+    "payload-plugin",
+    "apple-sign-in"
   ],
   "files": [
     "dist"
