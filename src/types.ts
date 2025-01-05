@@ -27,15 +27,31 @@ export interface PluginTypes {
    */
   serverURL: string;
 
-  	/**
+	/**
 	 * Response mode for the OAuth provider.
-	 * Required for Apple OAuth when requesting name or email scope.
+	 * Specifies how the authorization response should be returned.
+	 *
+	 * Required for Apple OAuth when requesting name or email scopes.
+	 * Apple requires 'form_post' when requesting these scopes to ensure
+	 * secure transmission of user data.
+	 *
 	 * Common values:
 	 * - 'form_post': Response parameters encoded in POST body (required for Apple with name/email scope)
-	 * - 'query': Response parameters encoded in URL query string
+	 * - 'query': Response parameters encoded in URL query string (default for most providers)
+	 * - 'fragment': Response parameters encoded in URL fragment
+	 *
+	 * Example for Apple OAuth:
+	 * ```typescript
+	 * {
+	 *   responseMode: 'form_post',
+	 *   scopes: ['name', 'email']
+	 * }
+	 * ```
+	 *
 	 * @default undefined
 	 */
 	responseMode?: string
+
 
   /**
    * Slug of the collection where user information will be stored

@@ -12,15 +12,23 @@ import { PluginTypes } from "./types";
 export const createCallbackEndpoint = (
   pluginOptions: PluginTypes,
 ): Endpoint => ({
-  method: "get",
-  path: pluginOptions.callbackPath || "/oauth/callback",
+ // Support both GET (default OAuth2) and POST (required for Apple OAuth with form_post)
+	// - GET: Used by most OAuth providers (Google, GitHub, etc.)
+	// - POST: Required by Apple when requesting name/email scopes with response_mode=form_post
+	method: ['get', 'post'],
+	path: pluginOptions.callbackPath || '/oauth/callback',
   handler: async (req) => {
     try {
-      const { code } = req.query;
-      if (typeof code !== "string")
-        throw new Error(
-          `Code not in query string: ${JSON.stringify(req.query)}`,
-        );
+   // Handle authorization code from both GET query params and POST body
+			// This enables support for Apple's form_post response mode while maintaining
+			// compatibility with traditional OAuth2 GET responses
+			const code = req.method === 'POST' ? req.body?.code : req.query?.code
+      	// Improved error handling to clearly indicate whether we're missing the code
+			// from POST body (Apple OAuth) or GET query parameters (standard OAuth)
+    	if (typeof code !== 'string')
+				throw new Error(
+						`Code not found in ${req.method === 'POST' ? 'body' : 'query'}: ${JSON.stringify(req.method === 'POST' ? req.body : req.query)}`,
+				)
 
       // /////////////////////////////////////
       // shorthands
