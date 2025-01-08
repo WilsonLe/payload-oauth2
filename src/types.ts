@@ -1,4 +1,4 @@
-import { PayloadRequest } from "payload";
+import type { PayloadRequest } from "payload";
 
 export interface PluginTypes {
   /**
@@ -28,6 +28,23 @@ export interface PluginTypes {
   serverURL: string;
 
   /**
+   * Response mode for the OAuth provider.
+   * Specifies how the authorization response should be returned.
+   *
+   * Required for Apple OAuth when requesting name or email scopes.
+   * Apple requires 'form_post' when requesting these scopes to ensure
+   * secure transmission of user data.
+   *
+   * Common values:
+   * - 'form_post': Response parameters encoded in POST body (required for Apple with name/email scope)
+   * - 'query': Response parameters encoded in URL query string (default for most providers)
+   * - 'fragment': Response parameters encoded in URL fragment
+   *
+   * @default undefined
+   */
+  responseMode?: string;
+
+  /**
    * Slug of the collection where user information will be stored
    * @default "users"
    */
@@ -54,6 +71,7 @@ export interface PluginTypes {
    * URL to the token endpoint.
    * The following are token endpoints for popular OAuth providers:
    * - Google: https://oauth2.googleapis.com/token
+   * - Apple: https://appleid.apple.com/auth/token
    */
   tokenEndpoint: string;
 
@@ -62,6 +80,7 @@ export interface PluginTypes {
    * Must not have trailing slash.
    * The following are authorization endpoints for popular OAuth providers:
    * - Google: https://accounts.google.com/o/oauth2/v2/auth
+   * - Apple: https://appleid.apple.com/auth/authorize
    */
   providerAuthorizationUrl: string;
 
@@ -69,10 +88,14 @@ export interface PluginTypes {
    * Function to get user information from the OAuth provider.
    * This function should return a promise that resolves to the user
    * information that will be stored in database.
-   * @param accessToken Access token obtained from OAuth provider
+   *
+   * For providers that return user info in the ID token (like Apple),
+   * you can decode the JWT token here to extract user information.
+   *
+   * @param accessToken Access token or ID token obtained from OAuth provider
    * @param req PayloadRequest object
    */
-  getUserInfo: (accessToken: string, req: PayloadRequest) => Promise<any> | any;
+  getUserInfo: (accessToken: string, req: PayloadRequest) => Promise<Record<string, unknown>>;
 
   /**
    * Scope for the OAuth provider.
@@ -81,6 +104,9 @@ export interface PluginTypes {
    *   + https://www.googleapis.com/auth/userinfo.email
    *   + https://www.googleapis.com/auth/userinfo.profile
    *   + openid
+   * - Apple:
+   *   + name
+   *   + email
    */
   scopes: string[];
 
@@ -122,7 +148,7 @@ export interface PluginTypes {
    * @param code Code obtained from the OAuth provider, used to exchange for access token
    * @param req PayloadRequest object
    */
-  getToken?: (code: string, req: PayloadRequest) => string | Promise<string>;
+  getToken?: (code: string, req: PayloadRequest) => Promise<string>;
 
   /**
    * Redirect users after successful login.

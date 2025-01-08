@@ -1,5 +1,5 @@
-import { Endpoint } from "payload";
-import { PluginTypes } from "./types";
+import type { Endpoint } from "payload";
+import type { PluginTypes } from "./types";
 
 export const createAuthorizeEndpoint = (
   pluginOptions: PluginTypes,
@@ -20,7 +20,15 @@ export const createAuthorizeEndpoint = (
 
     const responseType = "code";
     const accessType = "offline";
-    const authorizeUrl = `${pluginOptions.providerAuthorizationUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}${prompt}`;
+
+    // Add response_mode if specified (required for Apple OAuth with name/email scopes)
+    const responseMode = pluginOptions.responseMode
+      ? `&response_mode=${pluginOptions.responseMode}`
+      : "";
+
+    const authorizeUrl = `${
+      pluginOptions.providerAuthorizationUrl
+    }?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}${prompt}${responseMode}`;
 
     return Response.redirect(authorizeUrl);
   },
