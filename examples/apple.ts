@@ -30,7 +30,9 @@ export const appleOAuth = OAuth2Plugin({
       }
 
       // Decode the base64 payload
-      const payload = JSON.parse(Buffer.from(tokenParts[1], "base64").toString());
+      const payload = JSON.parse(
+        Buffer.from(tokenParts[1], "base64").toString(),
+      );
 
       if (!payload.email) {
         throw new Error("No email found in payload");

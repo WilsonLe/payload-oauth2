@@ -75,7 +75,7 @@ export const modifyAuthCollection = (
   // /////////////////////////////////////
   const endpoints = existingCollectionConfig.endpoints || [];
   endpoints.push(createAuthorizeEndpoint(pluginOptions));
-  endpoints.push(createCallbackEndpoint(pluginOptions));
+  endpoints.push(...createCallbackEndpoint(pluginOptions));
 
   return {
     ...existingCollectionConfig,

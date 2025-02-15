@@ -20,6 +20,6 @@
     "plugins": [{ "name": "next" }],
     "target": "ES2017"
   },
-  "include": ["src", ".next/types/**/*.ts"],
+  "include": ["./src", ".next/types/**/*.ts"],
   "exclude": ["node_modules", "dist", "build"]
 }

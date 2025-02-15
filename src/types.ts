@@ -95,7 +95,10 @@ export interface PluginTypes {
    * @param accessToken Access token or ID token obtained from OAuth provider
    * @param req PayloadRequest object
    */
-  getUserInfo: (accessToken: string, req: PayloadRequest) => Promise<Record<string, unknown>>;
+  getUserInfo: (
+    accessToken: string,
+    req: PayloadRequest,
+  ) => Promise<Record<string, unknown>>;
 
   /**
    * Scope for the OAuth provider.
