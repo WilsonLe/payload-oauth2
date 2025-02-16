@@ -25,6 +25,7 @@ Technically this plugin should work with all generic OAuth2 providers. Here are 
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | Google   | [![Test Google OAuth](https://github.com/WilsonLe/payload-oauth2/actions/workflows/test-google-oauth.yml/badge.svg)](https://github.com/WilsonLe/payload-oauth2/actions/workflows/test-google-oauth.yml)    | [Config](./examples/google.ts)  |
 | Zitadel  | [![Test Zitadel OAuth](https://github.com/WilsonLe/payload-oauth2/actions/workflows/test-zitadel-oauth.yml/badge.svg)](https://github.com/WilsonLe/payload-oauth2/actions/workflows/test-zitadel-oauth.yml) | [Config](./examples/zitadel.ts) |
+| Apple    | Test not implemented                                                                                                                                                                                        | [Config](./examples/apple.ts)   |
 
 # Installation
 
@@ -32,6 +33,8 @@ Technically this plugin should work with all generic OAuth2 providers. Here are 
 npm install payload-oauth2
 yarn install payload-oauth2
 pnpm install payload-oauth2
+
+Or if you are feeling adventurous and want to manage the plugin yourself, you can copy the `src` directory into your payload projects.
 ```
 
 # Contributing
