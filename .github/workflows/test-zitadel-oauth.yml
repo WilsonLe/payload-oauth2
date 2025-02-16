@@ -52,7 +52,7 @@ jobs:
           node-version: "20"
           cache: "pnpm"
       - run: |
-          pnpx puppeteer browsers install chrome
+          pnpm dlx puppeteer browsers install chrome
       - run: pnpm install
       - name: Run test
         run: |
