@@ -33,9 +33,9 @@ Technically this plugin should work with all generic OAuth2 providers. Here are 
 npm install payload-oauth2
 yarn install payload-oauth2
 pnpm install payload-oauth2
-
-Or if you are feeling adventurous and want to manage the plugin yourself, you can copy the `src` directory into your payload projects.
 ```
+
+If you are feeling adventurous and want to manage the plugin yourself, you can copy the `src` directory into your payload projects.
 
 # Contributing
 
