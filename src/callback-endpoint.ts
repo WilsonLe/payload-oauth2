@@ -56,6 +56,8 @@ export const createCallbackEndpoint = (
       const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
       const redirectUri = `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
       const useEmailAsIdentity = pluginOptions.useEmailAsIdentity ?? false;
+      const excludeEmailFromJwtToken =
+        !useEmailAsIdentity || pluginOptions.excludeEmailFromJwtToken || false;
 
       // /////////////////////////////////////
       // beforeOperation - Collection
@@ -164,7 +166,7 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       const fieldsToSign = getFieldsToSign({
         collectionConfig,
-        email: user.email || "",
+        email: excludeEmailFromJwtToken ? "" : user.email || "",
         user: user as PayloadRequest["user"],
       });
 
@@ -216,7 +218,7 @@ export const createCallbackEndpoint = (
       return new Response(null, {
         headers: {
           "Set-Cookie": cookie,
-          Location: await pluginOptions.successRedirect(req),
+          Location: await pluginOptions.successRedirect(req, token),
         },
         status: 302,
       });

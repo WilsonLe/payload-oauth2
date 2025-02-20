@@ -21,6 +21,13 @@ export interface PluginTypes {
   useEmailAsIdentity?: boolean;
 
   /**
+   * Exclude email from jwt token. This is overriden to false if
+   * useEmailAsIdentity is true because email is required to identify the user.
+   * @default false
+   */
+  excludeEmailFromJwtToken?: boolean;
+
+  /**
    * URL to the server. This is used to redirect users after login.
    * Must not have trailing slash.
    * Must start with http:// or https://
@@ -155,9 +162,18 @@ export interface PluginTypes {
 
   /**
    * Redirect users after successful login.
-   * @param req PayloadRequest object
+   * @deprecated Use the two-parameter overload instead
    */
-  successRedirect: (req: PayloadRequest) => string | Promise<string>;
+  successRedirect(req: PayloadRequest): string | Promise<string>;
+  /**
+   * Redirect users after successful login.
+   * @param req PayloadRequest object
+   * @param accessToken Payload generated access token of the authenticated user
+   */
+  successRedirect(
+    req: PayloadRequest,
+    accessToken: string,
+  ): string | Promise<string>;
 
   /**
    * Redirect users after failed login.

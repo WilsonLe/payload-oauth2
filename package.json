@@ -1,6 +1,6 @@
 {
   "name": "payload-oauth2",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "type": "module",
   "homepage:": "https://payloadcms.com",
   "repository": "https://github.com/WilsonLe/payload-oauth2",
@@ -57,7 +57,7 @@
     "@payloadcms/ui": "^3",
     "@swc/jest": "0.2.36",
     "@types/jest": "29.5.12",
-    "@types/node": "^22.10.2",
+    "@types/node": "22.13.4",
     "@types/react": "18.3.3",
     "cross-env": "7.0.3",
     "dotenv": "16.4.5",
@@ -70,12 +70,12 @@
     "payload": "^3",
     "prettier": "3.3.2",
     "prettier-plugin-organize-imports": "3.2.4",
-    "puppeteer": "^23.6.0",
+    "puppeteer": "23.6.0",
     "react": "^19",
     "react-dom": "^19",
     "rimraf": "5.0.7",
     "sharp": "0.33.4",
-    "tree-kill": "^1.2.2",
+    "tree-kill": "1.2.2",
     "typescript": "5.4.5"
   }
 }
