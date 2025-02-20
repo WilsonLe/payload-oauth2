@@ -11,8 +11,8 @@ export const createAuthorizeEndpoint = (
     const authCollection = pluginOptions.authCollection || "users";
     const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
     const redirectUri = `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
-    const scope = pluginOptions.scopes.join(" ");
 
+    const scope = pluginOptions.scopes.join(" ");
     const responseType = "code";
     const accessType = "offline";
 
@@ -29,6 +29,9 @@ export const createAuthorizeEndpoint = (
     }
     if (pluginOptions.responseMode) {
       url.searchParams.append("response_mode", pluginOptions.responseMode);
+    }
+    if (pluginOptions.authType) {
+      url.searchParams.append("auth_type", pluginOptions.authType);
     }
 
     return Response.redirect(url.toString());

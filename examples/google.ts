@@ -59,7 +59,7 @@ export const googleOAuth = OAuth2Plugin({
 
     return token;
   },
-  successRedirect: (req) => {
+  successRedirect: (req: PayloadRequest, accessToken?: string) => {
     return "/admin";
   },
   failureRedirect: (req, err) => {

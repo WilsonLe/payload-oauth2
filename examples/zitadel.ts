@@ -63,7 +63,7 @@ export const zitadelOAuth = OAuth2Plugin({
 
     return token;
   },
-  successRedirect: (req) => {
+  successRedirect: (req: PayloadRequest, token?: string) => {
     return "/admin";
   },
   failureRedirect: (req, err) => {

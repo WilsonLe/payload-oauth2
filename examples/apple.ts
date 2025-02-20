@@ -85,7 +85,7 @@ export const appleOAuth = OAuth2Plugin({
       throw error;
     }
   },
-  successRedirect: (req) => {
+  successRedirect: (req: PayloadRequest, token?: string) => {
     // Check user roles to determine redirect
     const user = req.user;
     if (user && Array.isArray(user.roles)) {

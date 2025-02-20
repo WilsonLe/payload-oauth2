@@ -140,6 +140,14 @@ export interface PluginTypes {
   prompt?: string;
 
   /**
+   * Authentication type for the OAuth provider.
+   * This is used by Facebook to specify the behavior of login flow.
+   * Reference: https://developers.facebook.com/docs/facebook-login/guides/advanced/re-authentication/
+   * Possible values are "reauthenticate" and "rerequest".
+   */
+  authType?: string;
+
+  /**
    * Path to the callback endpoint.
    * Must start with a forward slash.
    * Must NOT have a trailing slash.
@@ -165,6 +173,7 @@ export interface PluginTypes {
    * @deprecated Use the two-parameter overload instead
    */
   successRedirect(req: PayloadRequest): string | Promise<string>;
+
   /**
    * Redirect users after successful login.
    * @param req PayloadRequest object
