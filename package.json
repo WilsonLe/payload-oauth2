@@ -77,8 +77,5 @@
     "sharp": "0.33.4",
     "tree-kill": "^1.2.2",
     "typescript": "5.4.5"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   }
 }
