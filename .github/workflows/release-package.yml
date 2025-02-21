@@ -7,6 +7,34 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
+    env:
+      ##########################################################################
+      # App Config
+      ##########################################################################
+      NEXT_PUBLIC_URL: "http://localhost:3000"
+      DATABASE_URI: "file:./payload-oauth2.db"
+      PAYLOAD_SECRET: "hellohereisasecretforyou"
+
+      ##########################################################################
+      # Google OAuth Config
+      ##########################################################################
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+      ##########################################################################
+      # Test Config
+      ##########################################################################
+      # Optional: Set to "true" to run test browser in headless mode
+      HEADLESS: true
+
+      ##########################################################################
+      # Google Test Account
+      ##########################################################################
+      # Required: Google Test Account Email
+      GOOGLE_TEST_EMAIL: ${{ secrets.GOOGLE_TEST_EMAIL }}
+
+      # Required: Google Test Account Password
+      GOOGLE_TEST_PASSWORD: ${{ secrets.GOOGLE_TEST_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
@@ -23,7 +51,7 @@ jobs:
         run: |
           for i in {1..3}; do
             echo "Attempt $i"
-            if pnpm test:google; then
+            if pnpm test; then
               echo "Success on attempt $i"
               exit 0
             fi
