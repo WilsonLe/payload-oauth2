@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import type { Endpoint } from "payload";
 import type { PluginTypes } from "./types";
 
@@ -33,6 +34,8 @@ export const createAuthorizeEndpoint = (
     if (pluginOptions.authType) {
       url.searchParams.append("auth_type", pluginOptions.authType);
     }
+
+    url.searchParams.append("nonce", crypto.randomBytes(16).toString("hex"));
 
     return Response.redirect(url.toString());
   },
