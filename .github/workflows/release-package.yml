@@ -16,16 +16,16 @@ jobs:
       PAYLOAD_SECRET: "hellohereisasecretforyou"
 
       ##########################################################################
-      # Google OAuth Config
-      ##########################################################################
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-
-      ##########################################################################
       # Test Config
       ##########################################################################
       # Optional: Set to "true" to run test browser in headless mode
       HEADLESS: true
+
+      ##########################################################################
+      # Google OAuth Config
+      ##########################################################################
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
       ##########################################################################
       # Google Test Account
@@ -35,6 +35,25 @@ jobs:
 
       # Required: Google Test Account Password
       GOOGLE_TEST_PASSWORD: ${{ secrets.GOOGLE_TEST_PASSWORD }}
+
+      ##########################################################################
+      # Zitadel OAuth Config
+      ##########################################################################
+      ZITADEL_CLIENT_ID: ${{ secrets.ZITADEL_CLIENT_ID }}
+      ZITADEL_CLIENT_SECRET: ${{ secrets.ZITADEL_CLIENT_SECRET }}
+      ZITADEL_TOKEN_ENDPOINT: ${{ secrets.ZITADEL_TOKEN_ENDPOINT }}
+      ZITADEL_AUTHORIZATION_URL: ${{ secrets.ZITADEL_AUTHORIZATION_URL }}
+      ZITADEL_USERINFO_ENDPOINT: ${{ secrets.ZITADEL_USERINFO_ENDPOINT }}
+
+      ##########################################################################
+      # Zitadel Test Account
+      ##########################################################################
+      # Required: Zitadel Test Account Email
+      ZITADEL_TEST_EMAIL: ${{ secrets.ZITADEL_TEST_EMAIL }}
+
+      # Required: Zitadel Test Account Password
+      ZITADEL_TEST_PASSWORD: ${{ secrets.ZITADEL_TEST_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
