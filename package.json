@@ -2,9 +2,9 @@
   "name": "payload-oauth2",
   "version": "1.0.12",
   "type": "module",
-  "homepage:": "https://payloadcms.com",
+  "homepage:": "https://github.com/WilsonLe/payload-oauth2",
   "repository": "https://github.com/WilsonLe/payload-oauth2",
-  "description": "OAuth2 plugin for Payload CMS with Apple Sign In support",
+  "description": "OAuth2 plugin for Payload CMS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "keywords": [
@@ -77,5 +77,8 @@
     "sharp": "0.33.4",
     "tree-kill": "^1.2.2",
     "typescript": "5.4.5"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
