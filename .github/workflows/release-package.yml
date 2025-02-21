@@ -92,6 +92,6 @@ jobs:
           cache: "pnpm"
       - run: pnpm install
       - run: pnpm build
+      - name: Configure npm access token via .npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
       - run: pnpm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
