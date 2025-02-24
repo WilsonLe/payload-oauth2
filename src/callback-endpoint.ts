@@ -218,7 +218,7 @@ export const createCallbackEndpoint = (
       return new Response(null, {
         headers: {
           "Set-Cookie": cookie,
-          Location: await pluginOptions.successRedirect(req, token),
+          Location: await pluginOptions.successRedirect(req, jwtToken),
         },
         status: 302,
       });
