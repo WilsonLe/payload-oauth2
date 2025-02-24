@@ -2,6 +2,105 @@
   "version": "6",
   "dialect": "sqlite",
   "tables": {
+    "local_users": {
+      "name": "local_users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reset_password_token": {
+          "name": "reset_password_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reset_password_expiration": {
+          "name": "reset_password_expiration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "salt": {
+          "name": "salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "login_attempts": {
+          "name": "login_attempts",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "lock_until": {
+          "name": "lock_until",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "local_users_updated_at_idx": {
+          "name": "local_users_updated_at_idx",
+          "columns": ["updated_at"],
+          "isUnique": false
+        },
+        "local_users_created_at_idx": {
+          "name": "local_users_created_at_idx",
+          "columns": ["created_at"],
+          "isUnique": false
+        },
+        "local_users_email_idx": {
+          "name": "local_users_email_idx",
+          "columns": ["email"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "users": {
       "name": "users",
       "columns": {
@@ -49,6 +148,11 @@
           "columns": ["sub"],
           "isUnique": false
         },
+        "users_updated_at_idx": {
+          "name": "users_updated_at_idx",
+          "columns": ["updated_at"],
+          "isUnique": false
+        },
         "users_created_at_idx": {
           "name": "users_created_at_idx",
           "columns": ["created_at"],
@@ -57,7 +161,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "payload_locked_documents": {
       "name": "payload_locked_documents",
@@ -99,6 +204,11 @@
           "columns": ["global_slug"],
           "isUnique": false
         },
+        "payload_locked_documents_updated_at_idx": {
+          "name": "payload_locked_documents_updated_at_idx",
+          "columns": ["updated_at"],
+          "isUnique": false
+        },
         "payload_locked_documents_created_at_idx": {
           "name": "payload_locked_documents_created_at_idx",
           "columns": ["created_at"],
@@ -107,7 +217,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "payload_locked_documents_rels": {
       "name": "payload_locked_documents_rels",
@@ -117,7 +228,7 @@
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "order": {
           "name": "order",
@@ -138,6 +249,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "local_users_id": {
+          "name": "local_users_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "users_id": {
@@ -163,6 +281,16 @@
           "name": "payload_locked_documents_rels_path_idx",
           "columns": ["path"],
           "isUnique": false
+        },
+        "payload_locked_documents_rels_local_users_id_idx": {
+          "name": "payload_locked_documents_rels_local_users_id_idx",
+          "columns": ["local_users_id"],
+          "isUnique": false
+        },
+        "payload_locked_documents_rels_users_id_idx": {
+          "name": "payload_locked_documents_rels_users_id_idx",
+          "columns": ["users_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -171,6 +299,15 @@
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "payload_locked_documents",
           "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "payload_locked_documents_rels_local_users_fk": {
+          "name": "payload_locked_documents_rels_local_users_fk",
+          "tableFrom": "payload_locked_documents_rels",
+          "tableTo": "local_users",
+          "columnsFrom": ["local_users_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -186,7 +323,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "payload_preferences": {
       "name": "payload_preferences",
@@ -235,6 +373,11 @@
           "columns": ["key"],
           "isUnique": false
         },
+        "payload_preferences_updated_at_idx": {
+          "name": "payload_preferences_updated_at_idx",
+          "columns": ["updated_at"],
+          "isUnique": false
+        },
         "payload_preferences_created_at_idx": {
           "name": "payload_preferences_created_at_idx",
           "columns": ["created_at"],
@@ -243,7 +386,8 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "payload_preferences_rels": {
       "name": "payload_preferences_rels",
@@ -253,7 +397,7 @@
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "order": {
           "name": "order",
@@ -274,6 +418,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "local_users_id": {
+          "name": "local_users_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "users_id": {
@@ -299,6 +450,16 @@
           "name": "payload_preferences_rels_path_idx",
           "columns": ["path"],
           "isUnique": false
+        },
+        "payload_preferences_rels_local_users_id_idx": {
+          "name": "payload_preferences_rels_local_users_id_idx",
+          "columns": ["local_users_id"],
+          "isUnique": false
+        },
+        "payload_preferences_rels_users_id_idx": {
+          "name": "payload_preferences_rels_users_id_idx",
+          "columns": ["users_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -307,6 +468,15 @@
           "tableFrom": "payload_preferences_rels",
           "tableTo": "payload_preferences",
           "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "payload_preferences_rels_local_users_fk": {
+          "name": "payload_preferences_rels_local_users_fk",
+          "tableFrom": "payload_preferences_rels",
+          "tableTo": "local_users",
+          "columnsFrom": ["local_users_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -322,7 +492,8 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "payload_migrations": {
       "name": "payload_migrations",
@@ -366,6 +537,11 @@
         }
       },
       "indexes": {
+        "payload_migrations_updated_at_idx": {
+          "name": "payload_migrations_updated_at_idx",
+          "columns": ["updated_at"],
+          "isUnique": false
+        },
         "payload_migrations_created_at_idx": {
           "name": "payload_migrations_created_at_idx",
           "columns": ["created_at"],
@@ -374,9 +550,11 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
+  "views": {},
   "enums": {},
   "_meta": {
     "tables": {},
@@ -385,6 +563,6 @@
   "internal": {
     "indexes": {}
   },
-  "id": "cedd7049-0d47-4c51-8734-2c3d70ac3c4d",
+  "id": "0653c2d0-b1b7-43ca-85ed-c2d2ca48aef3",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

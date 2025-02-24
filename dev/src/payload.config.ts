@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { googleOAuth } from "../../examples/google";
 import { zitadelOAuth } from "../../examples/zitadel";
+import LocalUsers from "./collections/LocalUsers";
 import Users from "./collections/Users";
 import { migrations } from "./migrations";
 
@@ -32,7 +33,7 @@ export default buildConfig({
     prodMigrations: migrations,
   }),
   editor: lexicalEditor({}),
-  collections: [Users],
+  collections: [Users, LocalUsers],
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   plugins: [googleOAuth, zitadelOAuth],
   sharp,
