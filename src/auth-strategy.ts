@@ -52,7 +52,7 @@ export const createAuthStrategy = (
         let user: User | null = null;
 
         if (pluginOptions.useEmailAsIdentity) {
-          if (typeof jwtUser.email !== "string") {
+          if (!jwtUser.email || typeof jwtUser.email !== "string") {
             payload.logger.warn(
               "Using email as identity but no email is found in jwt token",
             );
