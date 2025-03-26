@@ -5,6 +5,7 @@ import { buildConfig } from "payload";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { googleOAuth } from "../../examples/google";
+import { keycloakOAuth } from "../../examples/keycloak";
 import { zitadelOAuth } from "../../examples/zitadel";
 import LocalUsers from "./collections/LocalUsers";
 import Users from "./collections/Users";
@@ -23,6 +24,7 @@ export default buildConfig({
       afterLogin: [
         "src/components/GoogleOAuthLoginButton#GoogleOAuthLoginButton",
         "src/components/ZitadelOAuthLoginButton#ZitadelOAuthLoginButton",
+        "src/components/KeycloakOAuthLoginButton#KeycloakOAuthLoginButton",
       ],
     },
     user: Users.slug,
@@ -35,6 +37,6 @@ export default buildConfig({
   editor: lexicalEditor({}),
   collections: [Users, LocalUsers],
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
-  plugins: [googleOAuth, zitadelOAuth],
+  plugins: [googleOAuth, zitadelOAuth, keycloakOAuth],
   sharp,
 });
