@@ -68,7 +68,7 @@ export interface PluginOptions {
    * Customize your own sub field to store the OAuth provider's user ID.
    * Overrides `subFieldName` if both are provided.
    */
-  customSubField?: TextField;
+  subField?: TextField;
 
   /**
    * Client ID for the OAuth provider

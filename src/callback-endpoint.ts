@@ -49,9 +49,7 @@ export const createCallbackEndpoint = (
       // shorthands
       // /////////////////////////////////////
       const subFieldName =
-        pluginOptions.customSubField?.name ||
-        pluginOptions.subFieldName ||
-        "sub";
+        pluginOptions.subField?.name || pluginOptions.subFieldName || "sub";
       const authCollection = (pluginOptions.authCollection ||
         "users") as CollectionSlug;
       const collectionConfig = req.payload.collections[authCollection].config;

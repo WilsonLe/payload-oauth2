@@ -16,7 +16,7 @@ export const OAuth2Plugin =
     // /////////////////////////////////////
     const authCollectionSlug = pluginOptions.authCollection || "users";
     const subFieldName =
-      pluginOptions.customSubField?.name || pluginOptions.subFieldName || "sub";
+      pluginOptions.subField?.name || pluginOptions.subFieldName || "sub";
     const authCollection = config.collections?.find(
       (collection) => collection.slug === authCollectionSlug,
     );
