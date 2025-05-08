@@ -1,6 +1,6 @@
 {
   "name": "payload-oauth2",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "type": "module",
   "homepage:": "https://github.com/WilsonLe/payload-oauth2",
   "repository": "https://github.com/WilsonLe/payload-oauth2",
@@ -33,7 +33,7 @@
     "dev:lint": "cd dev && cross-env NODE_OPTIONS=--no-deprecation next lint",
     "generate:types": "payload generate:types",
     "generate:importmap": "payload generate:importmap",
-    "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
+    "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rimraf node_modules && rimraf pnpm-lock.yaml && pnpm --ignore-workspace install",
     "clean": "rimraf dist && rimraf dev/.next",
     "prepublishOnly": "pnpm clean && pnpm build",
     "prepare": "tsc"
@@ -77,5 +77,6 @@
     "sharp": "0.33.4",
     "tree-kill": "^1.2.2",
     "typescript": "5.4.5"
-  }
+  },
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }
