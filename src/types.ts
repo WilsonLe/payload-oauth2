@@ -114,6 +114,16 @@ export interface PluginOptions {
   ) => Promise<Record<string, unknown>>;
 
   /**
+   * Behavior when a user is not found in the database.
+   * If set to "create", a new user will be created with the information
+   * returned from the OAuth provider.
+   * If set to "error", an error will be thrown and the user will not
+   * be created.
+   * @default "create"
+   */
+  onUserNotFoundBehavior?: "create" | "error";
+
+  /**
    * Scope for the OAuth provider.
    * The following are scopes for popular OAuth providers:
    * - Google:
