@@ -16,6 +16,7 @@ export const googleOAuth = OAuth2Plugin({
   authorizePath: "/oauth/google",
   callbackPath: "/oauth/google/callback",
   authCollection: "users",
+  onUserNotFoundBehavior: "error",
   tokenEndpoint: "https://oauth2.googleapis.com/token",
   scopes: [
     "openid",
