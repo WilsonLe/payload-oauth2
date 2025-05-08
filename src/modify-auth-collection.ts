@@ -2,10 +2,10 @@ import { AuthStrategy, type CollectionConfig } from "payload";
 import { createAuthStrategy } from "./auth-strategy";
 import { createAuthorizeEndpoint } from "./authorize-endpoint";
 import { createCallbackEndpoint } from "./callback-endpoint";
-import { PluginTypes } from "./types";
+import { PluginOptions } from "./types";
 
 export const modifyAuthCollection = (
-  pluginOptions: PluginTypes,
+  pluginOptions: PluginOptions,
   existingCollectionConfig: CollectionConfig,
   subFieldName: string,
 ): CollectionConfig => {

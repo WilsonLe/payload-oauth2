@@ -13,10 +13,10 @@ import type {
 } from "payload";
 import { generatePayloadCookie, getFieldsToSign } from "payload";
 import { defaultGetToken } from "./default-get-token";
-import type { PluginTypes } from "./types";
+import type { PluginOptions } from "./types";
 
 export const createCallbackEndpoint = (
-  pluginOptions: PluginTypes,
+  pluginOptions: PluginOptions,
 ): Endpoint[] => {
   const handler: PayloadHandler = async (req: PayloadRequest) => {
     try {
@@ -48,7 +48,8 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // shorthands
       // /////////////////////////////////////
-      const subFieldName = pluginOptions.subFieldName || "sub";
+      const subFieldName =
+        pluginOptions.subField?.name || pluginOptions.subFieldName || "sub";
       const authCollection = (pluginOptions.authCollection ||
         "users") as CollectionSlug;
       const collectionConfig = req.payload.collections[authCollection].config;
