@@ -1,6 +1,6 @@
-import type { PayloadRequest } from "payload";
+import type { PayloadRequest, TextField } from "payload";
 
-export interface PluginTypes {
+export interface PluginOptions {
   /**
    * Enable or disable plugin
    * @default false
@@ -63,6 +63,12 @@ export interface PluginTypes {
    * @default "sub"
    */
   subFieldName?: string;
+
+  /**
+   * Customize your own sub field to store the OAuth provider's user ID.
+   * Overrides `subFieldName` if both are provided.
+   */
+  customSubField?: TextField;
 
   /**
    * Client ID for the OAuth provider

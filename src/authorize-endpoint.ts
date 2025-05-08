@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import type { Endpoint } from "payload";
-import type { PluginTypes } from "./types";
+import type { PluginOptions } from "./types";
 
 export const createAuthorizeEndpoint = (
-  pluginOptions: PluginTypes,
+  pluginOptions: PluginOptions,
 ): Endpoint => ({
   method: "get",
   path: pluginOptions.authorizePath || "/oauth/authorize",

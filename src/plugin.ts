@@ -1,9 +1,9 @@
 import type { Plugin } from "payload";
 import { modifyAuthCollection } from "./modify-auth-collection";
-import type { PluginTypes } from "./types";
+import type { PluginOptions } from "./types";
 
 export const OAuth2Plugin =
-  (pluginOptions: PluginTypes): Plugin =>
+  (pluginOptions: PluginOptions): Plugin =>
   (incomingConfig) => {
     let config = { ...incomingConfig };
 
@@ -15,7 +15,8 @@ export const OAuth2Plugin =
     // Modify auth collection
     // /////////////////////////////////////
     const authCollectionSlug = pluginOptions.authCollection || "users";
-    const subFieldName = pluginOptions.subFieldName || "sub";
+    const subFieldName =
+      pluginOptions.customSubField?.name || pluginOptions.subFieldName || "sub";
     const authCollection = config.collections?.find(
       (collection) => collection.slug === authCollectionSlug,
     );
