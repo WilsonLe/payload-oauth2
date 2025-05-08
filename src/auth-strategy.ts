@@ -7,10 +7,10 @@ import {
   User,
   parseCookies,
 } from "payload";
-import { PluginTypes } from "./types";
+import { PluginOptions } from "./types";
 
 export const createAuthStrategy = (
-  pluginOptions: PluginTypes,
+  pluginOptions: PluginOptions,
   subFieldName: string,
 ): AuthStrategy => {
   const authStrategy: AuthStrategy = {
