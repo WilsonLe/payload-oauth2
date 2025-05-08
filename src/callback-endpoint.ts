@@ -59,6 +59,8 @@ export const createCallbackEndpoint = (
       const useEmailAsIdentity = pluginOptions.useEmailAsIdentity ?? false;
       const excludeEmailFromJwtToken =
         !useEmailAsIdentity || pluginOptions.excludeEmailFromJwtToken || false;
+      const onUserNotFoundBehavior =
+        pluginOptions.onUserNotFoundBehavior || "create";
 
       // /////////////////////////////////////
       // beforeOperation - Collection
@@ -117,17 +119,27 @@ export const createCallbackEndpoint = (
 
       let user = existingUser.docs[0] as User;
       if (!user) {
-        // Create new user if they don't exist
-        // Generate secure random password for OAuth users
-        userInfo.password = crypto.randomBytes(32).toString("hex");
-        userInfo.collection = authCollection;
-        const result = await req.payload.create({
-          req,
-          collection: authCollection,
-          data: userInfo,
-          showHiddenFields: true,
-        });
-        user = result as unknown as User;
+        if (onUserNotFoundBehavior === "error") {
+          throw new Error(
+            `User not found: ${useEmailAsIdentity ? userInfo.email : userInfo[subFieldName]}`,
+          );
+        } else if (onUserNotFoundBehavior === "create") {
+          // Create new user if they don't exist
+          // Generate secure random password for OAuth users
+          userInfo.password = crypto.randomBytes(32).toString("hex");
+          userInfo.collection = authCollection;
+          const result = await req.payload.create({
+            req,
+            collection: authCollection,
+            data: userInfo,
+            showHiddenFields: true,
+          });
+          user = result as unknown as User;
+        } else {
+          throw new Error(
+            `Invalid onUserNotFoundBehavior: ${onUserNotFoundBehavior}`,
+          );
+        }
       } else {
         // Update existing user with latest info from provider
         userInfo.collection = authCollection;
