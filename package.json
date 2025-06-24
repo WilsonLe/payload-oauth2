@@ -36,7 +36,11 @@
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rimraf node_modules && rimraf pnpm-lock.yaml && pnpm --ignore-workspace install",
     "clean": "rimraf dist && rimraf dev/.next",
     "prepublishOnly": "pnpm clean && pnpm build",
-    "prepare": "tsc"
+    "prepare": "tsc",
+    "payload-oauth2:generate-apple-client-secret": "node ./bin/generate-apple-client-secret.mjs"
+  },
+  "bin": {
+    "payload-oauth2:generate-apple-client-secret": "./bin/generate-apple-client-secret.mjs"
   },
   "author": "wilsonle2907@gmail.com",
   "license": "MIT",
@@ -76,7 +80,8 @@
     "rimraf": "5.0.7",
     "sharp": "0.33.4",
     "tree-kill": "^1.2.2",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "yargs": "17.7.2"
   },
   "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }
