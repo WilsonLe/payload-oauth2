@@ -4,6 +4,7 @@ import path from "path";
 import { buildConfig } from "payload";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
+import { appleOAuth } from "../../examples/apple";
 import { googleOAuth } from "../../examples/google";
 import { microsoftEntraIdOAuth } from "../../examples/microsoft-entra-id";
 import { zitadelOAuth } from "../../examples/zitadel";
@@ -24,6 +25,7 @@ export default buildConfig({
       afterLogin: [
         "src/components/GoogleOAuthLoginButton#GoogleOAuthLoginButton",
         "src/components/ZitadelOAuthLoginButton#ZitadelOAuthLoginButton",
+        "src/components/AppleOAuthLoginButton#AppleOAuthLoginButton",
         "src/components/MicrosoftEntraIdOAuthLoginButton#MicrosoftEntraIdOAuthLoginButton",
       ],
     },
@@ -37,6 +39,6 @@ export default buildConfig({
   editor: lexicalEditor({}),
   collections: [Users, LocalUsers],
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
-  plugins: [googleOAuth, zitadelOAuth, microsoftEntraIdOAuth],
+  plugins: [googleOAuth, zitadelOAuth, microsoftEntraIdOAuth, appleOAuth],
   sharp,
 });

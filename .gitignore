@@ -249,3 +249,4 @@ dist
 dev/src/uploads
 
 *.db*
+*.p8*
