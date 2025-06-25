@@ -22,6 +22,6 @@ export const defaultGetToken = async (
   const tokenData = await tokenResponse.json();
   const accessToken = tokenData?.access_token;
   if (typeof accessToken !== "string")
-    throw new Error(`No access token: ${tokenData}`);
+    throw new Error(`No access token: ${JSON.stringify(tokenData)}`);
   return accessToken;
 };
