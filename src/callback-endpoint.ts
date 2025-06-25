@@ -1,4 +1,3 @@
-import { defaultCallbackExtractToken } from "default-callback-extract-token";
 import { SignJWT } from "jose";
 import crypto from "node:crypto";
 import type {
@@ -13,6 +12,7 @@ import type {
   User,
 } from "payload";
 import { generatePayloadCookie, getFieldsToSign } from "payload";
+import { defaultCallbackExtractToken } from "./default-callback-extract-token";
 import { defaultGetToken } from "./default-get-token";
 import type { PluginOptions } from "./types";
 
