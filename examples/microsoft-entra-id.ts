@@ -16,6 +16,20 @@ const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0
 const authorizationUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
 const microsoftGraphBaseUrl = "https://graph.microsoft.com/v1.0";
 
+/**
+
+Note: For Microsoft Entra ID, you need to xreate an app registration
+  - Go to Azure Portal -> Microsoft Entra ID -> App Registrations -> New Registration
+  - Fill in the name and select the supported account types
+  - Add a "Web" redirect URI: http://localhost:3000/api/users/oauth/microsoft-entra-id/callback
+  - When created, go to API Permissions -> Add a permission -> Microsoft Graph -> Delegated permissions -> Select the ones you need, e.g. email, openid, profile and offline_access -> Add permissions
+  - Optional: If you do not want users to have to give consent to your app everytime they login: Click on Grant admin consent for {tenant} -> Yes
+  - Optional: If you want groups to be part of your token(s), you can go to Token configuration -> Add groups claim -> Select the groups you want to add -> Save
+  - Go to Certificates & secrets -> Client secrets -> New client secret -> Add a description -> Expires -> Add -> Copy the secret (it will only be shown once) -> And save the secret somewhere safe or add it to your .env file
+
+You can read a little about registering apps here as well: https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
+ */
+
 export const microsoftEntraIdOAuth = OAuth2Plugin({
   enabled:
     typeof clientId === "string" &&

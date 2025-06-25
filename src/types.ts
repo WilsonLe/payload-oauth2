@@ -114,6 +114,14 @@ export interface PluginOptions {
   ) => Promise<Record<string, unknown>>;
 
   /**
+   * Function to extract authorization code from the callback request.
+   * @param req PayloadRequest object
+   * @returns Promise that resolves to the authorization code
+   * @default `defaultCallbackExtractToken` in `src/default-callback-extract-token.ts`
+   */
+  callbackExtractToken?: (req: PayloadRequest) => Promise<string>;
+
+  /**
    * Behavior when a user is not found in the database.
    * If set to "create", a new user will be created with the information
    * returned from the OAuth provider.

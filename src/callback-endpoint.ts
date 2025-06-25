@@ -12,6 +12,7 @@ import type {
   User,
 } from "payload";
 import { generatePayloadCookie, getFieldsToSign } from "payload";
+import { defaultCallbackExtractToken } from "./default-callback-extract-token";
 import { defaultGetToken } from "./default-get-token";
 import type { PluginOptions } from "./types";
 
@@ -20,31 +21,6 @@ export const createCallbackEndpoint = (
 ): Endpoint[] => {
   const handler: PayloadHandler = async (req: PayloadRequest) => {
     try {
-      // Obtain code from either POST body or GET query parameters
-      let code: string | undefined;
-      if (req.method === "POST") {
-        // Handle form data from POST request (used by Apple OAuth)
-        const contentType = req.headers.get("content-type");
-        if (contentType?.includes("application/x-www-form-urlencoded")) {
-          const text = await (req as unknown as Request).text();
-          const formData = new URLSearchParams(text);
-          code = formData.get("code") || undefined;
-        }
-      } else if (req.method === "GET") {
-        // Handle query parameters (used by Google OAuth)
-        code =
-          typeof req.query === "object" && req.query
-            ? (req.query as { code?: string }).code
-            : undefined;
-      }
-      if (typeof code !== "string") {
-        throw new Error(
-          `Code not found in ${req.method === "POST" ? "body" : "query"}: ${
-            req.method === "POST" ? "form-data" : JSON.stringify(req.query)
-          }`,
-        );
-      }
-
       // /////////////////////////////////////
       // shorthands
       // /////////////////////////////////////
@@ -61,6 +37,13 @@ export const createCallbackEndpoint = (
         !useEmailAsIdentity || pluginOptions.excludeEmailFromJwtToken || false;
       const onUserNotFoundBehavior =
         pluginOptions.onUserNotFoundBehavior || "create";
+      const callbackExtractToken =
+        pluginOptions.callbackExtractToken || defaultCallbackExtractToken;
+
+      // /////////////////////////////////////
+      // extract code from request
+      // /////////////////////////////////////
+      const code = await callbackExtractToken(req);
 
       // /////////////////////////////////////
       // beforeOperation - Collection
