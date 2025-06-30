@@ -19,16 +19,20 @@ export const modifyAuthCollection = (
     (field) => "name" in field && field.name === subFieldName,
   );
   if (!existingSubField) {
-    fields.push({
-      name: subFieldName,
-      type: "text",
-      index: true,
-      access: {
-        read: () => true,
-        create: () => true,
-        update: () => false,
-      },
-    });
+    if (!!pluginOptions.subField) {
+      fields.push(pluginOptions.subField);
+    } else {
+      fields.push({
+        name: subFieldName,
+        type: "text",
+        index: true,
+        access: {
+          read: () => true,
+          create: () => true,
+          update: () => false,
+        },
+      });
+    }
   }
 
   // add email field if disableLocalStrategy is set
