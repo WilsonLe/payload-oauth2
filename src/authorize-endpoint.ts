@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { Endpoint } from "payload";
+import type { Endpoint, PayloadRequest } from "payload";
 import type { PluginOptions } from "./types";
 
 export const createAuthorizeEndpoint = (
@@ -7,7 +7,7 @@ export const createAuthorizeEndpoint = (
 ): Endpoint => ({
   method: "get",
   path: pluginOptions.authorizePath || "/oauth/authorize",
-  handler: async (req) => {
+  handler: async (req: PayloadRequest) => {
     const clientId = pluginOptions.clientId;
     const authCollection = pluginOptions.authCollection || "users";
     const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
@@ -36,7 +36,7 @@ export const createAuthorizeEndpoint = (
     }
 
     // Forward state from request query if available
-    const state = req.query?.state;
+    const state = req.searchParams.get("state");
     if (state) url.searchParams.append("state", state);
 
     url.searchParams.append("nonce", crypto.randomBytes(16).toString("hex"));
