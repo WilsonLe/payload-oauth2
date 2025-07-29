@@ -5,7 +5,7 @@ import {
   AuthStrategyResult,
   CollectionSlug,
   User,
-  parseCookies,
+  extractJWT,
 } from "payload";
 import { PluginOptions } from "./types";
 
@@ -17,8 +17,7 @@ export const createAuthStrategy = (
     name: pluginOptions.strategyName,
     authenticate: async ({ headers, payload }): Promise<AuthStrategyResult> => {
       try {
-        const cookie = parseCookies(headers);
-        const token = cookie.get(`${payload.config.cookiePrefix}-token`);
+        const token = extractJWT({ headers, payload })
         if (!token) return { user: null };
 
         let jwtUser: JWTPayload | null = null;
