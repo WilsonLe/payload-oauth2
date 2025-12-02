@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import type { Endpoint, PayloadRequest } from "payload";
+import { generateCookie } from "payload";
+import { defaultGetPkceCodes } from "./default-get-pkce-codes";
 import type { PluginOptions } from "./types";
 
 export const createAuthorizeEndpoint = (
@@ -11,7 +13,9 @@ export const createAuthorizeEndpoint = (
     const clientId = pluginOptions.clientId;
     const authCollection = pluginOptions.authCollection || "users";
     const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
-    const redirectUri = `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
+    const redirectUri =
+      pluginOptions.authorizeRedirectUri ||
+      `${pluginOptions.serverURL}/api/${authCollection}${callbackPath}`;
 
     const scope = pluginOptions.scopes.join(" ");
     const responseType = "code";
@@ -40,6 +44,29 @@ export const createAuthorizeEndpoint = (
     if (state) url.searchParams.append("state", state);
 
     url.searchParams.append("nonce", crypto.randomBytes(16).toString("hex"));
+
+    if (pluginOptions.pkceEnabled) {
+      const { challenge, challengeMethod, verifier } =
+        typeof pluginOptions.getPkceCodes === "function"
+          ? pluginOptions.getPkceCodes()
+          : defaultGetPkceCodes();
+      url.searchParams.append("code_challenge", challenge);
+      url.searchParams.append("code_challenge_method", challengeMethod);
+      const cookie = generateCookie({
+        name: "pkce_verifier",
+        value: verifier,
+        maxAge: 10 * 60, // 10 minutes
+        returnCookieAsObject: false,
+        sameSite: "Lax",
+      });
+      return new Response(null, {
+        headers: {
+          "Set-Cookie": cookie as string,
+          Location: url.toString(),
+        },
+        status: 302,
+      });
+    }
 
     return Response.redirect(url.toString());
   },

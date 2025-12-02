@@ -63,21 +63,23 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    'local-users': LocalUserAuthOperations;
     users: UserAuthOperations;
+    'local-users': LocalUserAuthOperations;
   };
   blocks: {};
   collections: {
-    'local-users': LocalUser;
     users: User;
+    'local-users': LocalUser;
+    'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
-    'local-users': LocalUsersSelect<false> | LocalUsersSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'local-users': LocalUsersSelect<false> | LocalUsersSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -89,33 +91,15 @@ export interface Config {
   globalsSelect: {};
   locale: null;
   user:
-    | (LocalUser & {
-        collection: 'local-users';
-      })
     | (User & {
         collection: 'users';
+      })
+    | (LocalUser & {
+        collection: 'local-users';
       });
   jobs: {
     tasks: unknown;
     workflows: unknown;
-  };
-}
-export interface LocalUserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
-  registerFirstUser: {
-    email: string;
-    password: string;
-  };
-  unlock: {
-    email: string;
-    password: string;
   };
 }
 export interface UserAuthOperations {
@@ -136,6 +120,34 @@ export interface UserAuthOperations {
     password: string;
   };
 }
+export interface LocalUserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  email: string;
+  updatedAt: string;
+  createdAt: string;
+}
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "local-users".
@@ -151,18 +163,31 @@ export interface LocalUser {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
   password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "payload-kv".
  */
-export interface User {
+export interface PayloadKv {
   id: number;
-  email: string;
-  sub?: string | null;
-  updatedAt: string;
-  createdAt: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -172,22 +197,22 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'local-users';
-        value: number | LocalUser;
-      } | null)
-    | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'local-users';
+        value: number | LocalUser;
       } | null);
   globalSlug?: string | null;
   user:
     | {
-        relationTo: 'local-users';
-        value: number | LocalUser;
-      }
-    | {
         relationTo: 'users';
         value: number | User;
+      }
+    | {
+        relationTo: 'local-users';
+        value: number | LocalUser;
       };
   updatedAt: string;
   createdAt: string;
@@ -200,12 +225,12 @@ export interface PayloadPreference {
   id: number;
   user:
     | {
-        relationTo: 'local-users';
-        value: number | LocalUser;
-      }
-    | {
         relationTo: 'users';
         value: number | User;
+      }
+    | {
+        relationTo: 'local-users';
+        value: number | LocalUser;
       };
   key?: string | null;
   value?:
@@ -233,6 +258,15 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  email?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "local-users_select".
  */
 export interface LocalUsersSelect<T extends boolean = true> {
@@ -245,16 +279,21 @@ export interface LocalUsersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "payload-kv_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  email?: T;
-  sub?: T;
-  updatedAt?: T;
-  createdAt?: T;
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

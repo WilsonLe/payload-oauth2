@@ -98,6 +98,12 @@ export interface PluginOptions {
   providerAuthorizationUrl: string;
 
   /**
+   * Optional URL to redirect users after authorization step.
+   * If not provided, `serverURL` + `/api/` + `authCollection` + `callbackPath` will be used.
+   */
+  authorizeRedirectUri?: string;
+
+  /**
    * Function to get user information from the OAuth provider.
    * This function should return a promise that resolves to the user
    * information that will be stored in database.
@@ -217,6 +223,27 @@ export interface PluginOptions {
     req: PayloadRequest,
     error?: unknown,
   ) => string | Promise<string>;
+
+  /**
+   * Proof Key for Code Exchange (PKCE). If true, the PKCE flow will be
+   * enabled. This is recommended for public clients (e.g. mobile apps, SPA)
+   * to enhance security during the OAuth authorization process.
+   * https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-pkce
+   * When enabled, a code challenge will be generated
+   * and included in the authorization request. By default cookies
+   * will be used to store the code verifier between the authorization and
+   * token exchange steps.
+   * @default false
+   */
+  pkceEnabled?: boolean;
+
+  /**
+   * Function to get PKCE codes from the OAuth providers.
+   *
+   * If its not provided default will be used.
+   * Reference: `defaultGetPkceCodes` in `src/default-get-pkce-codes.ts`
+   */
+  getPkceCodes?: () => { verifier: string, challenge: string, challengeMethod: string };
 }
 
 export interface NewCollectionTypes {
