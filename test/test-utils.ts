@@ -1,53 +1,42 @@
-import { ChildProcess, spawn } from "child_process";
-import kill from "tree-kill";
+/**
+ * Test Utilities
+ *
+ * This module re-exports common test utilities from the base OAuth test module.
+ * The new test architecture uses mock-based unit tests instead of E2E tests with Puppeteer.
+ *
+ * @see base-oauth-test.ts for the main test infrastructure
+ * @see google-oauth-test.ts for Google-specific test utilities
+ * @see zitadel-oauth-test.ts for Zitadel-specific test utilities
+ */
 
-export function runCommand(
-  command: string,
-  args: string[] = [],
-  verbose: boolean = false,
-) {
-  const cmdProcess: ChildProcess = spawn(command, args, {
-    stdio: ["inherit", "pipe", "pipe"],
-    detached: process.platform !== "win32", // Detached only for non-Windows platforms
-  });
+// Re-export all utilities from base-oauth-test
+export {
+  BaseOAuthTestSuite,
+  assertAuthorizeRedirect,
+  assertCallbackSuccessRedirect,
+  assertCookieSet,
+  createMockFetch,
+  createMockPayload,
+  createMockPayloadRequest,
+} from "./base-oauth-test";
+export type {
+  MockTokenResponse,
+  MockUserInfo,
+  OAuthTestContext,
+} from "./base-oauth-test";
 
-  let output = "";
+// Re-export Google test utilities
+export {
+  DEFAULT_GOOGLE_MOCK_USER,
+  GOOGLE_TEST_CONFIG,
+  GoogleOAuthTestSuite,
+  createGoogleMockFetch,
+} from "./google-oauth-test";
 
-  return {
-    process: cmdProcess, // Expose the process so you can access it later
-    result: new Promise<string | null>((resolve, reject) => {
-      // Capture and log stdout
-      cmdProcess.stdout?.on("data", (data) => {
-        const dataString = data.toString();
-        output += dataString;
-        if (verbose) console.log(dataString); // Log to console
-      });
-
-      // Capture and log stderr
-      cmdProcess.stderr?.on("data", (data) => {
-        const errorString = data.toString();
-        output += errorString;
-        if (verbose) console.error(errorString); // Log to console
-      });
-
-      cmdProcess.on("close", (code) => {
-        if (code === 0 || code === null) {
-          resolve(output); // Return captured output
-        } else {
-          resolve(null);
-        }
-      });
-    }),
-    stop: () => {
-      if (cmdProcess.pid) {
-        kill(cmdProcess.pid, "SIGTERM", (err) => {
-          if (err) {
-            console.error("Failed to kill process:", err);
-          } else {
-            console.log("Process killed successfully");
-          }
-        });
-      }
-    },
-  };
-}
+// Re-export Zitadel test utilities
+export {
+  DEFAULT_ZITADEL_MOCK_USER,
+  ZITADEL_TEST_CONFIG,
+  ZitadelOAuthTestSuite,
+  createZitadelMockFetch,
+} from "./zitadel-oauth-test";
