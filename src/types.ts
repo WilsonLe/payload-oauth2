@@ -1,4 +1,9 @@
-import type { PayloadRequest, TextField } from "payload";
+import type {
+  BasePayload,
+  PayloadRequest,
+  TextField,
+  TypedUser,
+} from "payload";
 
 export interface PluginOptions {
   /**
@@ -243,7 +248,32 @@ export interface PluginOptions {
    * If its not provided default will be used.
    * Reference: `defaultGetPkceCodes` in `src/default-get-pkce-codes.ts`
    */
-  getPkceCodes?: () => { verifier: string, challenge: string, challengeMethod: string };
+  getPkceCodes?: () => {
+    verifier: string;
+    challenge: string;
+    challengeMethod: string;
+  };
+
+  /**
+   * Function to resolve user identity.
+   * If its provided it will be used instead of the default behavior (useEmailAsIdentity or subFieldName).
+   * This function should return a promise that resolves to the user object
+   * or null if the user is not found.
+   * @param jwtUser The user object decoded from the JWT token
+   * @param payload BasePayload object
+   * @returns Promise that resolves to the TypedUser object or null if the user is not found
+   * @default undefined
+   */
+  resolveUserIdentity?: (
+    jwtUser: Record<string, unknown>,
+    payload: BasePayload,
+  ) => Promise<
+    | ({
+        _strategy?: string;
+        collection?: string;
+      } & TypedUser)
+    | null
+  >;
 }
 
 export interface NewCollectionTypes {
