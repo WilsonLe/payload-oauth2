@@ -64,6 +64,8 @@ export const createCallbackEndpoint = (
           pluginOptions.clientSecret,
           redirectUri,
           code,
+          pluginOptions.pkceEnabled,
+          req
         );
       }
 
