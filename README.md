@@ -37,6 +37,18 @@ pnpm install payload-oauth2
 
 If you are feeling adventurous and want to manage the plugin yourself, you can copy the `src` directory into your payload projects.
 
+# Starting the OAuth flow
+
+Create a normal browser navigation to the Payload authorize endpoint from your login UI:
+
+```tsx
+export function GoogleLoginButton() {
+  return <a href="/api/users/oauth/google">Continue with Google</a>
+}
+```
+
+In Next.js App Router apps, prefer not to start OAuth with `next/link` or `router.push()` for the authorize endpoint. The endpoint returns a redirect to the OAuth provider, not a React Server Component payload. The plugin defensively ignores Next.js RSC navigation probes so client routing can fall back without the noisy `Failed to fetch RSC payload ... Falling back to browser navigation` log, but normal document navigation is still the most direct option.
+
 # Contributing
 
 Contributions and feedback are very welcome.

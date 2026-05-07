@@ -105,6 +105,19 @@ describe("Google OAuth2 Plugin", () => {
       });
     });
 
+    it("should not redirect Next.js RSC navigation probes", async () => {
+      const pluginOptions = testSuite["getPluginOptions"]();
+      const authorizeEndpoint = createAuthorizeEndpoint(pluginOptions);
+      const mockRequest = testSuite.createAuthorizeRequest();
+      mockRequest.headers.set("RSC", "1");
+      mockRequest.headers.set("Next-Router-State-Tree", "[]");
+
+      const response = await authorizeEndpoint.handler(mockRequest);
+
+      expect((response as Response).status).toBe(204);
+      expect((response as Response).headers.get("Location")).toBeNull();
+    });
+
     it("should include state parameter when provided", async () => {
       const pluginOptions = testSuite["getPluginOptions"]();
       const authorizeEndpoint = createAuthorizeEndpoint(pluginOptions);

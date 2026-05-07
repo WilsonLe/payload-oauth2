@@ -4,12 +4,22 @@ import { generateCookie } from "payload";
 import { defaultGetPkceCodes } from "./default-get-pkce-codes";
 import type { PluginOptions } from "./types";
 
+const isNextRscRequest = (req: PayloadRequest): boolean =>
+  req.headers.get("RSC") === "1" ||
+  req.headers.has("Next-Router-State-Tree") ||
+  req.headers.has("Next-Router-Prefetch") ||
+  req.searchParams.has("_rsc");
+
 export const createAuthorizeEndpoint = (
   pluginOptions: PluginOptions,
 ): Endpoint => ({
   method: "get",
   path: pluginOptions.authorizePath || "/oauth/authorize",
   handler: async (req: PayloadRequest) => {
+    if (isNextRscRequest(req)) {
+      return new Response(null, { status: 204 });
+    }
+
     const clientId = pluginOptions.clientId;
     const authCollection = pluginOptions.authCollection || "users";
     const callbackPath = pluginOptions.callbackPath || "/oauth/callback";
