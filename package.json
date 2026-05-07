@@ -28,7 +28,6 @@
     "test": "cd test && jest --config=./jest.config.js --runInBand",
     "test:google": "cd test && jest --config=./jest.config.js google.spec.ts --runInBand",
     "test:zitadel": "cd test && jest --config=./jest.config.js zitadel.spec.ts --runInBand",
-    "test:mocked": "cd test && jest --config=./jest.config.js mocked-provider-integration.spec.ts --runInBand",
     "test:watch": "cd test && jest --config=./jest.config.js --watch",
     "format": "prettier --write src dev test",
     "payload": "cd dev && cross-env NODE_OPTIONS=--no-deprecation payload",

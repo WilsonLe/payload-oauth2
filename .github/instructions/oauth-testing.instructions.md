@@ -8,4 +8,4 @@ applyTo: "test/**,src/**"
 - Keep `pnpm test` deterministic: no live provider calls; model provider behavior with mocks instead of env-gated network tests.
 - Exercise callback behavior through `createCallbackEndpoint(...).handler(req)`; avoid replacing callback assertions with direct mock Payload `create` or `update` calls.
 - Preserve provider matrix coverage for Google, Zitadel, Apple, and Microsoft Entra ID; share contract helpers but keep provider quirks in fixtures.
-- Use mocked external-provider integration for authorize + callback happy paths, create/update branches, provider response failures, token request bodies, and PKCE authorize behavior; `pnpm test:mocked` runs that focused layer.
+- Use mocked external-provider integration for authorize + callback happy paths, create/update branches, provider response failures, token request bodies, and PKCE authorize behavior; `pnpm test` runs this layer with the rest of the suite.
