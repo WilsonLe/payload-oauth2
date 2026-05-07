@@ -14,7 +14,7 @@ export const modifyAuthCollection = (
   // /////////////////////////////////////
 
   // add sub fields
-  const fields = existingCollectionConfig.fields || [];
+  const fields = [...(existingCollectionConfig.fields || [])];
   const existingSubField = fields.find(
     (field) => "name" in field && field.name === subFieldName,
   );
@@ -44,18 +44,13 @@ export const modifyAuthCollection = (
     pluginOptions.useEmailAsIdentity === true &&
     fields.every((field: any) => field.name !== "email")
   ) {
-    const existingEmailField = fields.find(
-      (field) => "name" in field && field.name === "email",
-    );
-    if (!existingEmailField) {
-      fields.push({
-        name: "email",
-        type: "email",
-        required: true,
-        unique: true,
-        index: true,
-      });
-    }
+    fields.push({
+      name: "email",
+      type: "email",
+      required: true,
+      unique: true,
+      index: true,
+    });
   }
 
   // /////////////////////////////////////
@@ -65,21 +60,32 @@ export const modifyAuthCollection = (
   const authStrategy = createAuthStrategy(pluginOptions, subFieldName);
   let strategies: AuthStrategy[] = [];
   if (
-    typeof existingCollectionConfig.auth === "boolean" ||
-    existingCollectionConfig.auth === undefined
+    typeof existingCollectionConfig.auth !== "boolean" &&
+    existingCollectionConfig.auth !== undefined &&
+    Array.isArray(existingCollectionConfig.auth.strategies)
   ) {
-    strategies = [];
-  } else if (Array.isArray(existingCollectionConfig.auth.strategies)) {
-    strategies = existingCollectionConfig.auth.strategies || [];
+    strategies = existingCollectionConfig.auth.strategies.filter(
+      (strategy) => strategy.name !== pluginOptions.strategyName,
+    );
   }
   strategies.push(authStrategy);
 
   // /////////////////////////////////////
   // modify endpoints
   // /////////////////////////////////////
-  const endpoints = existingCollectionConfig.endpoints || [];
-  endpoints.push(createAuthorizeEndpoint(pluginOptions));
-  endpoints.push(...createCallbackEndpoint(pluginOptions));
+  const endpoints = [...(existingCollectionConfig.endpoints || [])];
+  const oauthEndpoints = [
+    createAuthorizeEndpoint(pluginOptions),
+    ...createCallbackEndpoint(pluginOptions),
+  ];
+  oauthEndpoints.forEach((oauthEndpoint) => {
+    const existingEndpoint = endpoints.find(
+      (endpoint) =>
+        endpoint.method === oauthEndpoint.method &&
+        endpoint.path === oauthEndpoint.path,
+    );
+    if (!existingEndpoint) endpoints.push(oauthEndpoint);
+  });
 
   return {
     ...existingCollectionConfig,

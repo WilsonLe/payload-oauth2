@@ -3,7 +3,7 @@
  * This allows tests to run without loading the actual ESM payload package
  */
 
-// Re-export types as empty interfaces/types for type checking
+// Re-export types as empty aliases for test-time TypeScript imports.
 export type PayloadRequest = {
   payload: Payload;
   headers: Headers;
@@ -13,11 +13,13 @@ export type PayloadRequest = {
   context: Record<string, unknown>;
   user: unknown;
   text?: () => Promise<string>;
+  json?: () => Promise<Record<string, unknown>>;
 };
 
 export type Payload = {
   collections: Record<string, { config: CollectionConfig }>;
   config: Config;
+  secret: string;
   logger: {
     info: jest.Mock;
     error: jest.Mock;
@@ -29,19 +31,26 @@ export type Payload = {
   update: jest.Mock;
 };
 
+export type AuthConfig = {
+  disableLocalStrategy?: boolean;
+  strategies?: unknown[];
+  tokenExpiration?: number;
+};
+
 export type CollectionConfig = {
   slug: string;
-  auth?: boolean;
+  auth?: boolean | AuthConfig;
   fields: Field[];
   endpoints?: Endpoint[];
   hooks?: {
-    beforeLogin?: unknown[];
-    afterLogin?: unknown[];
+    beforeLogin?: Array<(args: Record<string, unknown>) => unknown>;
+    afterLogin?: Array<(args: Record<string, unknown>) => unknown>;
   };
 };
 
 export type Config = {
   secret?: string;
+  cookiePrefix?: string;
   collections?: CollectionConfig[];
 };
 
@@ -57,7 +66,23 @@ export type TextField = Field & {
 export type Endpoint = {
   path: string;
   method: string;
-  handler: (req: PayloadRequest) => Promise<Response>;
+  handler: (req: PayloadRequest) => Promise<Response> | Response;
+};
+
+export type PayloadHandler = Endpoint["handler"];
+export type RequestContext = Record<string, unknown>;
+export type CollectionSlug = string;
+export type JsonObject = Record<string, unknown>;
+export type TypeWithID = { id: string | number };
+export type User = TypeWithID & Record<string, unknown>;
+export type PaginatedDocs<T> = { docs: T[] };
+export type AuthStrategyResult = { user: User | null };
+export type AuthStrategy = {
+  name: string;
+  authenticate: (args: {
+    headers: Headers;
+    payload: Payload;
+  }) => Promise<AuthStrategyResult>;
 };
 
 /**
@@ -107,9 +132,56 @@ export function generateCookie(options: {
   return parts.join("; ");
 }
 
+export function generatePayloadCookie(options: {
+  collectionAuthConfig?: boolean | AuthConfig;
+  cookiePrefix?: string;
+  token: string;
+}): string {
+  const cookieName = options.cookiePrefix
+    ? `${options.cookiePrefix}-token`
+    : "payload-token";
+  return `${cookieName}=${options.token}; Path=/; HttpOnly`;
+}
+
+export function getFieldsToSign(options: {
+  collectionConfig: CollectionConfig;
+  email: string;
+  user: Record<string, unknown> | null;
+}): Record<string, unknown> {
+  return {
+    ...(options.user ?? {}),
+    email: options.email,
+  };
+}
+
+export function parseCookies(headers: Headers): Map<string, string> {
+  const cookieHeader = headers.get("cookie") || "";
+  const cookies = new Map<string, string>();
+
+  for (const part of cookieHeader.split(";")) {
+    const [rawName, ...rawValue] = part.trim().split("=");
+    if (!rawName) continue;
+    cookies.set(rawName, rawValue.join("="));
+  }
+
+  return cookies;
+}
+
+export function extractJWT({ headers }: { headers: Headers }): string | null {
+  const authorization = headers.get("authorization");
+  if (authorization?.startsWith("Bearer ")) {
+    return authorization.slice("Bearer ".length);
+  }
+  return null;
+}
+
 /**
  * Default export to satisfy any default imports
  */
 export default {
+  extractJWT,
   generateCookie,
+  generatePayloadCookie,
+  getFieldsToSign,
+  parseCookies,
 };
