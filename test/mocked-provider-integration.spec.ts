@@ -12,6 +12,7 @@ import {
 import {
   createMockExternalFetch,
   createProviderPluginOptions,
+  jsonResponse,
   oauthProviderTestCases,
   type OAuthProviderTestCase,
 } from "./oauth-provider-test-cases";
@@ -191,6 +192,35 @@ describe("Mocked external provider integration", () => {
           }),
         }),
       );
+    });
+
+    it("redirects to failure when mocked token exchange fails", async () => {
+      const usersCollection = buildPluginCollection(provider);
+      const callbackEndpoint = findEndpoint(
+        usersCollection.endpoints,
+        provider.callbackPath,
+        provider.callbackMethod.toLowerCase(),
+      );
+      global.fetch = jest.fn(async (url: string | URL | Request) => {
+        const requestUrl = String(url);
+        if (requestUrl === provider.tokenEndpoint) {
+          return jsonResponse({ error: "invalid_grant" }, 400);
+        }
+        return jsonResponse({ error: "unexpected_request" }, 500);
+      }) as unknown as typeof fetch;
+
+      const callbackRequest = createCallbackRequest(provider, usersCollection);
+      const callbackResponse = (await callbackEndpoint.handler(
+        callbackRequest,
+      )) as Response;
+
+      expect(callbackResponse.status).toBe(302);
+      expect(callbackResponse.headers.get("Location")).toContain(
+        `/admin/login?provider=${provider.strategyName}&error=`,
+      );
+      expect(callbackResponse.headers.get("Set-Cookie")).toBeNull();
+      expect(callbackRequest.payload.create).not.toHaveBeenCalled();
+      expect(callbackRequest.payload.update).not.toHaveBeenCalled();
     });
   });
 });

@@ -9,6 +9,7 @@ import {
 } from "./base-oauth-test";
 
 dotenv.config({ path: ".env" });
+dotenv.config({ path: "../dev/.env" });
 dotenv.config({ path: "../.env" });
 
 type LiveProviderCase = {
