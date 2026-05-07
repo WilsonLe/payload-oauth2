@@ -64,6 +64,8 @@ export const createCallbackEndpoint = (
           pluginOptions.clientSecret,
           redirectUri,
           code,
+          pluginOptions.pkceEnabled,
+          req,
         );
       }
 
@@ -81,6 +83,9 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       let existingUser: PaginatedDocs<JsonObject & TypeWithID>;
       if (useEmailAsIdentity) {
+        if (typeof userInfo.email !== "string" || userInfo.email.length === 0) {
+          throw new Error("Email not found in provider user info");
+        }
         // Use email as the unique identifier
         existingUser = await req.payload.find({
           req,
@@ -90,11 +95,18 @@ export const createCallbackEndpoint = (
           limit: 1,
         });
       } else {
+        const providerSubject = userInfo[subFieldName];
+        if (
+          typeof providerSubject !== "string" ||
+          providerSubject.length === 0
+        ) {
+          throw new Error(`No ${subFieldName} found in provider user info`);
+        }
         // Use provider's sub field as the unique identifier
         existingUser = await req.payload.find({
           req,
           collection: authCollection,
-          where: { [subFieldName]: { equals: userInfo[subFieldName] } },
+          where: { [subFieldName]: { equals: providerSubject } },
           showHiddenFields: true,
           limit: 1,
         });

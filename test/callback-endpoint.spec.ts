@@ -1,4 +1,5 @@
 import type { PayloadRequest } from "payload";
+import { createAuthStrategy } from "../src/auth-strategy";
 import { createCallbackEndpoint } from "../src/callback-endpoint";
 import type { PluginOptions } from "../src/types";
 import {
@@ -196,6 +197,115 @@ describe("Callback endpoint unit flow", () => {
       }),
     );
   });
+
+  it("authenticates the callback JWT through the auth strategy", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    let issuedToken = "";
+    const pluginOptions = basePluginOptions({
+      successRedirect: jest.fn((_req, token) => {
+        issuedToken = token;
+        return "/admin";
+      }),
+    });
+
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+    expect(response.status).toBe(302);
+    expect(issuedToken).toEqual(expect.any(String));
+    expect(context.createdUser).toBeTruthy();
+
+    context.foundUsers = [context.createdUser!];
+    const authStrategy = createAuthStrategy(pluginOptions, "sub");
+    const result = await authStrategy.authenticate({
+      headers: new Headers({ Authorization: `Bearer ${issuedToken}` }),
+      payload: req.payload,
+    });
+
+    expect(result.user).toEqual(
+      expect.objectContaining({
+        collection: "users",
+        email: "new-user@example.com",
+        sub: "provider-user-123",
+      }),
+    );
+  });
+
+  it("passes PKCE verifier cookie into the default token exchange", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    req.headers = new Headers({ cookie: "pkce_verifier=unit-pkce-verifier" });
+    const originalFetch = global.fetch;
+    const fetchMock = jest.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ access_token: "provider-access-token" }),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+    const pluginOptions = basePluginOptions({
+      getToken: undefined,
+      pkceEnabled: true,
+    });
+
+    try {
+      const response = (await getGetCallbackHandler(pluginOptions)(
+        req,
+      )) as Response;
+
+      expect(response.status).toBe(302);
+      const tokenRequest = fetchMock.mock.calls[0][1];
+      const tokenBody = new URLSearchParams(tokenRequest.body.toString());
+      expect(tokenBody.get("code_verifier")).toBe("unit-pkce-verifier");
+      expect(tokenBody.get("code")).toBe("callback-code-123");
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it.each([
+    {
+      name: "email identity has no email",
+      overrides: {},
+      userInfo: { sub: "provider-user-123" },
+      error: "Email not found in provider user info",
+    },
+    {
+      name: "subject identity has no subject",
+      overrides: { useEmailAsIdentity: false },
+      userInfo: { email: "new-user@example.com" },
+      error: "No sub found in provider user info",
+    },
+  ])(
+    "redirects to failure when $name",
+    async ({ overrides, userInfo, error }) => {
+      const context = createMockOAuthTestContext({ foundUsers: [] });
+      const req = createCallbackRequest(context);
+      const pluginOptions = basePluginOptions({
+        ...overrides,
+        getUserInfo: jest.fn().mockResolvedValue(userInfo),
+      });
+
+      const response = (await getGetCallbackHandler(pluginOptions)(
+        req,
+      )) as Response;
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toContain(
+        encodeURIComponent(error),
+      );
+      expect(req.payload.find).not.toHaveBeenCalled();
+      expect(req.payload.create).not.toHaveBeenCalled();
+      expect(pluginOptions.failureRedirect).toHaveBeenCalledWith(
+        req,
+        expect.any(Error),
+      );
+    },
+  );
 
   it("redirects to failure when authorization code extraction fails", async () => {
     const context = createMockOAuthTestContext();

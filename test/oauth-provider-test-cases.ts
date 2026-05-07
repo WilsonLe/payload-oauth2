@@ -263,15 +263,58 @@ export const createProviderPluginOptions = (
   ...overrides,
 });
 
+const requestHeaders = (options?: RequestInit) =>
+  new Headers(options?.headers as HeadersInit | undefined);
+
+const assertFormTokenRequest = (
+  provider: OAuthProviderTestCase,
+  options?: RequestInit,
+) => {
+  if (options?.method !== "POST") {
+    throw new Error(`${provider.name} token request must use POST`);
+  }
+  const headers = requestHeaders(options);
+  if (
+    !headers.get("content-type")?.includes("application/x-www-form-urlencoded")
+  ) {
+    throw new Error(`${provider.name} token request must be form-encoded`);
+  }
+  const body = new URLSearchParams(options.body?.toString());
+  for (const name of [
+    "code",
+    "client_id",
+    "client_secret",
+    "grant_type",
+    "redirect_uri",
+  ]) {
+    if (!body.get(name)) {
+      throw new Error(`${provider.name} token request missing ${name}`);
+    }
+  }
+};
+
+const assertBearerRequest = (
+  provider: OAuthProviderTestCase,
+  label: string,
+  options?: RequestInit,
+) => {
+  const authorization = requestHeaders(options).get("authorization");
+  if (!authorization?.startsWith("Bearer ")) {
+    throw new Error(`${provider.name} ${label} request missing bearer token`);
+  }
+};
+
 export const createMockExternalFetch = (provider: OAuthProviderTestCase) =>
   jest.fn(async (url: string | URL | Request, options?: RequestInit) => {
     const requestUrl = String(url);
 
     if (requestUrl === provider.tokenEndpoint) {
+      assertFormTokenRequest(provider, options);
       return jsonResponse(provider.tokenResponse);
     }
 
     if (provider.userInfoEndpoint && requestUrl === provider.userInfoEndpoint) {
+      assertBearerRequest(provider, "userinfo", options);
       return jsonResponse(
         provider.strategyName === "microsoft-entra-id"
           ? microsoftUserInfo
@@ -280,10 +323,11 @@ export const createMockExternalFetch = (provider: OAuthProviderTestCase) =>
     }
 
     if (provider.groupsEndpoint && requestUrl === provider.groupsEndpoint) {
+      assertBearerRequest(provider, "groups", options);
       return jsonResponse(provider.groupsResponse ?? { value: [] });
     }
 
-    return jsonResponse({ error: "not_found", url: requestUrl, options }, 404);
+    throw new Error(`${provider.name} made unexpected request: ${requestUrl}`);
   });
 
 export const jsonResponse = (body: unknown, status = 200) =>

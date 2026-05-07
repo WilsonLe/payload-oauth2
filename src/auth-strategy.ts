@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { JWTPayload, jwtVerify } from "jose";
 import {
   AuthStrategy,
@@ -17,20 +16,14 @@ export const createAuthStrategy = (
     name: pluginOptions.strategyName,
     authenticate: async ({ headers, payload }): Promise<AuthStrategyResult> => {
       try {
-        const token = extractJWT({ headers, payload })
+        const token = extractJWT({ headers, payload });
         if (!token) return { user: null };
 
         let jwtUser: JWTPayload | null = null;
         try {
-          const secret = crypto
-            .createHash("sha256")
-            .update(payload.config.secret)
-            .digest("hex")
-            .slice(0, 32);
-
           const { payload: verifiedPayload } = await jwtVerify(
             token,
-            new TextEncoder().encode(secret),
+            new TextEncoder().encode(payload.secret),
             { algorithms: ["HS256"] },
           );
           jwtUser = verifiedPayload;
