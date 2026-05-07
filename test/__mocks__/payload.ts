@@ -27,14 +27,20 @@ export type Payload = {
     debug: jest.Mock;
   };
   find: jest.Mock;
+  findByID: jest.Mock;
   create: jest.Mock;
   update: jest.Mock;
+  db: {
+    findOne: jest.Mock;
+    updateOne: jest.Mock;
+  };
 };
 
 export type AuthConfig = {
   disableLocalStrategy?: boolean;
   strategies?: unknown[];
   tokenExpiration?: number;
+  useSessions?: boolean;
 };
 
 export type CollectionConfig = {
@@ -74,6 +80,11 @@ export type RequestContext = Record<string, unknown>;
 export type CollectionSlug = string;
 export type JsonObject = Record<string, unknown>;
 export type TypeWithID = { id: string | number };
+export type UserSession = {
+  createdAt: Date | string;
+  expiresAt: Date | string;
+  id: string;
+};
 export type User = TypeWithID & Record<string, unknown>;
 export type PaginatedDocs<T> = { docs: T[] };
 export type AuthStrategyResult = { user: User | null };
@@ -146,11 +157,13 @@ export function generatePayloadCookie(options: {
 export function getFieldsToSign(options: {
   collectionConfig: CollectionConfig;
   email: string;
+  sid?: string;
   user: Record<string, unknown> | null;
 }): Record<string, unknown> {
   return {
     ...(options.user ?? {}),
     email: options.email,
+    ...(options.sid ? { sid: options.sid } : {}),
   };
 }
 
