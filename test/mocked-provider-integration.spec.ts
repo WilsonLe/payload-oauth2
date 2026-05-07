@@ -57,10 +57,17 @@ const findEndpoint = (
 const authCodeFor = (provider: OAuthProviderTestCase) =>
   `${provider.strategyName}-auth-code`;
 
+const mergeHeaders = (base: HeadersInit, extra: HeadersInit = {}) => {
+  const headers = new Headers(base);
+  new Headers(extra).forEach((value, key) => headers.set(key, value));
+  return headers;
+};
+
 const createCallbackRequest = (
   provider: OAuthProviderTestCase,
   usersCollection: CollectionConfig,
   context: OAuthTestContext = createMockOAuthTestContext({ foundUsers: [] }),
+  headers: HeadersInit = {},
 ): PayloadRequest => {
   const payload = createMockPayload(context);
   payload.collections.users.config = usersCollection;
@@ -69,9 +76,10 @@ const createCallbackRequest = (
     const body = `code=${encodeURIComponent(authCodeFor(provider))}`;
     return {
       payload,
-      headers: new Headers({
-        "content-type": "application/x-www-form-urlencoded",
-      }),
+      headers: mergeHeaders(
+        { "content-type": "application/x-www-form-urlencoded" },
+        headers,
+      ),
       searchParams: new URLSearchParams(),
       query: {},
       method: "POST",
@@ -84,7 +92,7 @@ const createCallbackRequest = (
   const code = authCodeFor(provider);
   return {
     payload,
-    headers: new Headers(),
+    headers: mergeHeaders({}, headers),
     searchParams: new URLSearchParams({ code }),
     query: { code },
     method: "GET",
@@ -336,6 +344,59 @@ describe("Mocked external provider integration", () => {
         `pkce_verifier=${provider.strategyName}-verifier`,
       );
     });
+
+    if (!provider.createGetToken) {
+      it("passes PKCE verifier cookie into the default token exchange", async () => {
+        const usersCollection = buildPluginCollection(provider, {
+          pkceEnabled: true,
+          getPkceCodes: () => ({
+            verifier: `${provider.strategyName}-verifier`,
+            challenge: `${provider.strategyName}-challenge`,
+            challengeMethod: "S256",
+          }),
+        });
+        const authorizeEndpoint = findEndpoint(
+          usersCollection.endpoints,
+          provider.authorizePath,
+          "get",
+        );
+        const callbackEndpoint = findEndpoint(
+          usersCollection.endpoints,
+          provider.callbackPath,
+          provider.callbackMethod.toLowerCase(),
+        );
+
+        const authorizeResponse = (await authorizeEndpoint.handler({
+          payload: createMockPayload(createMockOAuthTestContext()),
+          headers: new Headers(),
+          searchParams: new URLSearchParams(),
+          query: {},
+          method: "GET",
+          context: {},
+          user: null,
+        } as unknown as PayloadRequest)) as Response;
+        const pkceCookie = authorizeResponse.headers
+          .get("Set-Cookie")!
+          .split(";")[0];
+        const callbackRequest = createCallbackRequest(
+          provider,
+          usersCollection,
+          createMockOAuthTestContext({ foundUsers: [] }),
+          { cookie: pkceCookie },
+        );
+
+        const callbackResponse = (await callbackEndpoint.handler(
+          callbackRequest,
+        )) as Response;
+
+        expect(callbackResponse.status).toBe(302);
+        const tokenBody = tokenRequestBodyFor(provider);
+        expect(tokenBody.get("code")).toBe(authCodeFor(provider));
+        expect(tokenBody.get("code_verifier")).toBe(
+          `${provider.strategyName}-verifier`,
+        );
+      });
+    }
 
     it("redirects to failure when mocked token exchange fails", async () => {
       const usersCollection = buildPluginCollection(provider);
