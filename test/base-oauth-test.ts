@@ -10,6 +10,7 @@ import type { PluginOptions } from "../src/types";
  * Mock user data interface for testing
  */
 export interface MockUserInfo {
+  id?: string;
   email: string;
   sub: string;
   [key: string]: unknown;
@@ -68,7 +69,7 @@ export function createMockPayload(context?: OAuthTestContext): Payload {
     users: {
       config: {
         slug: "users",
-        auth: true,
+        auth: { tokenExpiration: 7200 },
         fields: [
           { name: "email", type: "email" },
           { name: "sub", type: "text" },
@@ -77,15 +78,17 @@ export function createMockPayload(context?: OAuthTestContext): Payload {
           beforeLogin: [],
           afterLogin: [],
         },
-      } as CollectionConfig,
+      } as unknown as CollectionConfig,
     },
   };
 
-  const mockPayload: Partial<Payload> = {
+  const mockPayload: Partial<Payload> & { secret: string } = {
     collections: mockCollections as unknown as Payload["collections"],
     config: {
+      cookiePrefix: "payload",
       secret: "test-secret-key-for-jwt-signing-12345",
     } as SanitizedConfig,
+    secret: "test-secret-key-for-jwt-signing-12345",
     logger: {
       info: jest.fn(),
       error: jest.fn(),
@@ -137,6 +140,29 @@ export function createMockPayload(context?: OAuthTestContext): Payload {
   };
 
   return mockPayload as Payload;
+}
+
+/**
+ * Creates a default mutable OAuth test context.
+ */
+export function createMockOAuthTestContext(
+  overrides: Partial<OAuthTestContext> = {},
+): OAuthTestContext {
+  return {
+    mockUserInfo: {
+      email: "test@example.com",
+      sub: "provider-user-123",
+    },
+    mockTokenResponse: {
+      access_token: "mock-access-token",
+      token_type: "Bearer",
+    },
+    mockAuthorizationCode: "mock-auth-code",
+    createdUser: null,
+    updatedUser: null,
+    foundUsers: [],
+    ...overrides,
+  };
 }
 
 /**
