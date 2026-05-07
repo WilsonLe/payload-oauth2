@@ -8,6 +8,7 @@ import { OAuth2Plugin } from "../src/plugin";
 import {
   createMockOAuthTestContext,
   createMockPayload,
+  type OAuthTestContext,
 } from "./base-oauth-test";
 import {
   createMockExternalFetch,
@@ -28,8 +29,11 @@ const createAuthCollection = (): CollectionConfig =>
     },
   }) as unknown as CollectionConfig;
 
-const buildPluginCollection = (provider: OAuthProviderTestCase) => {
-  const plugin = OAuth2Plugin(createProviderPluginOptions(provider));
+const buildPluginCollection = (
+  provider: OAuthProviderTestCase,
+  overrides = {},
+) => {
+  const plugin = OAuth2Plugin(createProviderPluginOptions(provider, overrides));
   const config = plugin({ collections: [createAuthCollection()] } as Config);
   const usersCollection = config.collections?.find(
     (collection) => collection.slug === "users",
@@ -50,16 +54,19 @@ const findEndpoint = (
   return endpoint;
 };
 
+const authCodeFor = (provider: OAuthProviderTestCase) =>
+  `${provider.strategyName}-auth-code`;
+
 const createCallbackRequest = (
   provider: OAuthProviderTestCase,
   usersCollection: CollectionConfig,
+  context: OAuthTestContext = createMockOAuthTestContext({ foundUsers: [] }),
 ): PayloadRequest => {
-  const context = createMockOAuthTestContext({ foundUsers: [] });
   const payload = createMockPayload(context);
   payload.collections.users.config = usersCollection;
 
   if (provider.callbackMethod === "POST") {
-    const body = `code=${encodeURIComponent(`${provider.strategyName}-auth-code`)}`;
+    const body = `code=${encodeURIComponent(authCodeFor(provider))}`;
     return {
       payload,
       headers: new Headers({
@@ -74,7 +81,7 @@ const createCallbackRequest = (
     } as unknown as PayloadRequest;
   }
 
-  const code = `${provider.strategyName}-auth-code`;
+  const code = authCodeFor(provider);
   return {
     payload,
     headers: new Headers(),
@@ -84,6 +91,14 @@ const createCallbackRequest = (
     context: {},
     user: null,
   } as unknown as PayloadRequest;
+};
+
+const tokenRequestBodyFor = (provider: OAuthProviderTestCase) => {
+  const tokenCall = (global.fetch as unknown as jest.Mock).mock.calls.find(
+    ([url]) => String(url) === provider.tokenEndpoint,
+  );
+  if (!tokenCall) throw new Error("token endpoint was not called");
+  return new URLSearchParams(tokenCall[1]?.body?.toString());
 };
 
 describe("Mocked external provider integration", () => {
@@ -162,6 +177,14 @@ describe("Mocked external provider integration", () => {
         provider.tokenEndpoint,
         expect.objectContaining({ method: "POST" }),
       );
+      const tokenBody = tokenRequestBodyFor(provider);
+      expect(tokenBody.get("code")).toBe(authCodeFor(provider));
+      expect(tokenBody.get("client_id")).toBe(provider.clientId);
+      expect(tokenBody.get("client_secret")).toBe(provider.clientSecret);
+      expect(tokenBody.get("grant_type")).toBe("authorization_code");
+      expect(tokenBody.get("redirect_uri")).toBe(
+        `${provider.serverURL}/api/users${provider.callbackPath}`,
+      );
       if (provider.userInfoEndpoint) {
         expect(global.fetch).toHaveBeenCalledWith(
           provider.userInfoEndpoint,
@@ -191,6 +214,126 @@ describe("Mocked external provider integration", () => {
             collection: "users",
           }),
         }),
+      );
+    });
+
+    it("updates an existing user with mocked provider info", async () => {
+      const usersCollection = buildPluginCollection(provider);
+      const callbackEndpoint = findEndpoint(
+        usersCollection.endpoints,
+        provider.callbackPath,
+        provider.callbackMethod.toLowerCase(),
+      );
+      const existingUser = {
+        id: `${provider.strategyName}-existing-user`,
+        email: provider.userInfo.email as string,
+        sub: provider.userInfo.sub as string,
+      };
+      const context = createMockOAuthTestContext({
+        foundUsers: [existingUser],
+      });
+
+      const callbackRequest = createCallbackRequest(
+        provider,
+        usersCollection,
+        context,
+      );
+      const callbackResponse = (await callbackEndpoint.handler(
+        callbackRequest,
+      )) as Response;
+
+      expect(callbackResponse.status).toBe(302);
+      expect(callbackRequest.payload.create).not.toHaveBeenCalled();
+      expect(callbackRequest.payload.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: "users",
+          id: existingUser.id,
+          data: expect.objectContaining({
+            email: provider.userInfo.email,
+            sub: provider.userInfo.sub,
+            collection: "users",
+          }),
+        }),
+      );
+    });
+
+    it("redirects to failure when mocked provider profile cannot be read", async () => {
+      const usersCollection = buildPluginCollection(provider);
+      const callbackEndpoint = findEndpoint(
+        usersCollection.endpoints,
+        provider.callbackPath,
+        provider.callbackMethod.toLowerCase(),
+      );
+      global.fetch = jest.fn(async (url: string | URL | Request) => {
+        const requestUrl = String(url);
+        if (requestUrl === provider.tokenEndpoint) {
+          return jsonResponse(
+            provider.strategyName === "apple"
+              ? { id_token: "not-a-jwt" }
+              : provider.tokenResponse,
+          );
+        }
+        if (
+          provider.userInfoEndpoint &&
+          requestUrl === provider.userInfoEndpoint
+        ) {
+          return jsonResponse({ error: "unauthorized" }, 401);
+        }
+        if (provider.groupsEndpoint && requestUrl === provider.groupsEndpoint) {
+          return jsonResponse(provider.groupsResponse ?? { value: [] });
+        }
+        return jsonResponse({ error: "unexpected_request" }, 500);
+      }) as unknown as typeof fetch;
+
+      const callbackRequest = createCallbackRequest(provider, usersCollection);
+      const callbackResponse = (await callbackEndpoint.handler(
+        callbackRequest,
+      )) as Response;
+
+      expect(callbackResponse.status).toBe(302);
+      expect(callbackResponse.headers.get("Location")).toContain(
+        `/admin/login?provider=${provider.strategyName}&error=`,
+      );
+      expect(callbackResponse.headers.get("Set-Cookie")).toBeNull();
+      expect(callbackRequest.payload.create).not.toHaveBeenCalled();
+      expect(callbackRequest.payload.update).not.toHaveBeenCalled();
+    });
+
+    it("adds deterministic PKCE challenge and verifier cookie on authorize", async () => {
+      const usersCollection = buildPluginCollection(provider, {
+        pkceEnabled: true,
+        getPkceCodes: () => ({
+          verifier: `${provider.strategyName}-verifier`,
+          challenge: `${provider.strategyName}-challenge`,
+          challengeMethod: "S256",
+        }),
+      });
+      const authorizeEndpoint = findEndpoint(
+        usersCollection.endpoints,
+        provider.authorizePath,
+        "get",
+      );
+
+      const authorizeResponse = (await authorizeEndpoint.handler({
+        payload: createMockPayload(createMockOAuthTestContext()),
+        headers: new Headers(),
+        searchParams: new URLSearchParams(),
+        query: {},
+        method: "GET",
+        context: {},
+        user: null,
+      } as unknown as PayloadRequest)) as Response;
+
+      const authorizeUrl = new URL(authorizeResponse.headers.get("Location")!);
+      expect(authorizeResponse.status).toBe(302);
+      expect(authorizeUrl.searchParams.get("code_challenge")).toBe(
+        `${provider.strategyName}-challenge`,
+      );
+      expect(authorizeUrl.searchParams.get("code_challenge_method")).toBe(
+        "S256",
+      );
+      expect(authorizeResponse.headers.get("Set-Cookie")).toContain(
+        `pkce_verifier=${provider.strategyName}-verifier`,
       );
     });
 

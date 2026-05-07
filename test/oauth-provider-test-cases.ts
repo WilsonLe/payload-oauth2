@@ -62,6 +62,12 @@ const microsoftUserInfo = {
   displayName: "Microsoft User",
 };
 
+const assertOkResponse = async (response: Response, label: string) => {
+  if (!response.ok) {
+    throw new Error(`${label} failed: ${await response.text()}`);
+  }
+};
+
 export const oauthProviderTestCases: OAuthProviderTestCase[] = [
   {
     name: "Google",
@@ -90,6 +96,7 @@ export const oauthProviderTestCases: OAuthProviderTestCase[] = [
       const response = await fetch(provider.userInfoEndpoint!, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
+      await assertOkResponse(response, "Google userinfo");
       const user = await response.json();
       return { email: user.email, sub: user.sub, name: user.name };
     },
@@ -124,6 +131,7 @@ export const oauthProviderTestCases: OAuthProviderTestCase[] = [
       const response = await fetch(provider.userInfoEndpoint!, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
+      await assertOkResponse(response, "Zitadel userinfo");
       const user = await response.json();
       return { email: user.email, sub: user.sub };
     },
@@ -164,6 +172,7 @@ export const oauthProviderTestCases: OAuthProviderTestCase[] = [
           redirect_uri: `${provider.serverURL}/api/users${provider.callbackPath}`,
         }).toString(),
       });
+      await assertOkResponse(response, "Apple token exchange");
       const tokenResponse = await response.json();
       if (typeof tokenResponse.id_token !== "string") {
         throw new Error(`No id token: ${JSON.stringify(tokenResponse)}`);
@@ -216,9 +225,11 @@ export const oauthProviderTestCases: OAuthProviderTestCase[] = [
       const userInfoResponse = await fetch(provider.userInfoEndpoint!, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      await fetch(provider.groupsEndpoint!, {
+      await assertOkResponse(userInfoResponse, "Microsoft Graph userinfo");
+      const groupsResponse = await fetch(provider.groupsEndpoint!, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
+      await assertOkResponse(groupsResponse, "Microsoft Graph groups");
       const user = await userInfoResponse.json();
       return { email: user.mail, sub: user.id, name: user.displayName };
     },
