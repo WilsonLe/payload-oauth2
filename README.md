@@ -47,7 +47,7 @@ export function GoogleLoginButton() {
 }
 ```
 
-In Next.js App Router apps, do not start OAuth with `next/link` or `router.push()` for the authorize endpoint. The endpoint returns a redirect to the OAuth provider, not a React Server Component payload, so client-side routing can briefly log `Failed to fetch RSC payload ... Falling back to browser navigation` before the login continues.
+In Next.js App Router apps, prefer not to start OAuth with `next/link` or `router.push()` for the authorize endpoint. The endpoint returns a redirect to the OAuth provider, not a React Server Component payload. The plugin defensively ignores Next.js RSC navigation probes so client routing can fall back without the noisy `Failed to fetch RSC payload ... Falling back to browser navigation` log, but normal document navigation is still the most direct option.
 
 # Contributing
 

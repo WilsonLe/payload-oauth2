@@ -13,15 +13,16 @@ applyTo: "src/authorize-endpoint.ts,src/modify-auth-collection.ts,README.md,dev/
 ## Root cause
 
 - The authorize endpoint is a Payload API endpoint that returns an HTTP redirect (`302`) to the external OAuth provider, not a Next.js App Router page or RSC payload.
-- When application UI starts login with Next client routing (`next/link` or `router.push`) to that same-origin API URL, Next tries to fetch an RSC payload first. The redirect/API response cannot satisfy that RSC request, so Next logs the fetch failure before falling back to full browser navigation.
+- When application UI starts login with Next client routing (`next/link` or `router.push`) to that same-origin API URL, Next tries to fetch an RSC payload first. If that probe follows the provider redirect, the fetch can fail before Next falls back to full browser navigation.
 
 ## Fix
 
-- Start OAuth with a document navigation instead of Next client routing: use a plain `<a href="/api/users/oauth/authorize">`, a form/action, or `window.location.assign('/api/users/oauth/authorize')`.
-- Do not use `next/link` or `router.push()` for the authorize endpoint. `prefetch={false}` may reduce prefetching, but it does not turn the click into a document navigation.
+- Prefer a document navigation for OAuth: use a plain `<a href="/api/users/oauth/authorize">`, a form/action, or `window.location.assign('/api/users/oauth/authorize')`.
+- The package should also defensively detect Next RSC probe requests (`RSC: 1`, `Next-Router-State-Tree`, `Next-Router-Prefetch`, or `_rsc`) and return `204 No Content` instead of the provider redirect. This lets Next fall back without the noisy failed-fetch log; the subsequent document navigation still receives the normal `302`.
+- `prefetch={false}` may reduce prefetching, but it does not turn a `next/link` click into a document navigation.
 
 ## Verification
 
-- Click the login control and confirm the browser navigates directly to `/api/<auth-collection>/oauth/authorize` and follows the provider redirect.
-- Confirm the console no longer emits the RSC payload fetch failure during login.
-- Confirm the OAuth callback still completes and authenticates the user.
+- Unit-test the authorize endpoint with Next RSC probe headers and assert `204` with no `Location` header.
+- Unit-test a normal authorize request and assert it still returns `302` with the provider authorization `Location`.
+- In a Next.js app, click the login control and confirm the OAuth flow redirects to the provider without the RSC payload fetch failure log, then returns through the callback and authenticates the user.
