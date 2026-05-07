@@ -12,6 +12,7 @@ import type {
   User,
 } from "payload";
 import { generatePayloadCookie, getFieldsToSign } from "payload";
+import { addPayloadSessionToUser } from "./auth-sessions";
 import { defaultCallbackExtractToken } from "./default-callback-extract-token";
 import { defaultGetToken } from "./default-get-token";
 import type { PluginOptions } from "./types";
@@ -172,9 +173,21 @@ export const createCallbackEndpoint = (
       // /////////////////////////////////////
       // login - OAuth2
       // /////////////////////////////////////
+      const sid = await addPayloadSessionToUser({
+        collectionConfig,
+        req,
+        user,
+      });
+      user.collection = authCollection;
+      user._strategy = pluginOptions.strategyName;
+      if (sid) {
+        user._sid = sid;
+      }
+
       const fieldsToSign = getFieldsToSign({
         collectionConfig,
         email: excludeEmailFromJwtToken ? "" : user.email || "",
+        sid,
         user: user as PayloadRequest["user"],
       });
 

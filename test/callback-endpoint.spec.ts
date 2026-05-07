@@ -1,3 +1,4 @@
+import { SignJWT, jwtVerify } from "jose";
 import type { PayloadRequest } from "payload";
 import { createAuthStrategy } from "../src/auth-strategy";
 import { createCallbackEndpoint } from "../src/callback-endpoint";
@@ -230,6 +231,141 @@ describe("Callback endpoint unit flow", () => {
         sub: "provider-user-123",
       }),
     );
+  });
+
+  it("creates a Payload session and signs its sid when sessions are enabled", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    req.payload.collections.users.config.auth = {
+      tokenExpiration: 7200,
+      useSessions: true,
+    };
+    let issuedToken = "";
+    const pluginOptions = basePluginOptions({
+      successRedirect: jest.fn((_req, token) => {
+        issuedToken = token;
+        return "/admin";
+      }),
+    });
+
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+
+    expect(response.status).toBe(302);
+    expect(req.payload.db.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "users",
+        id: "new-user-id",
+        returning: false,
+      }),
+    );
+    expect(context.createdUser?.sessions).toEqual([
+      expect.objectContaining({
+        id: expect.any(String),
+        createdAt: expect.any(Date),
+        expiresAt: expect.any(Date),
+      }),
+    ]);
+
+    const sid = context.createdUser?.sessions?.[0]?.id;
+    const { payload } = await jwtVerify(
+      issuedToken,
+      new TextEncoder().encode(req.payload.secret),
+    );
+    expect(payload.sid).toBe(sid);
+    expect(req.user).toEqual(expect.objectContaining({ _sid: sid }));
+  });
+
+  it("validates session-backed callback JWTs through the auth strategy", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    req.payload.collections.users.config.auth = {
+      tokenExpiration: 7200,
+      useSessions: true,
+    };
+    let issuedToken = "";
+    const pluginOptions = basePluginOptions({
+      successRedirect: jest.fn((_req, token) => {
+        issuedToken = token;
+        return "/admin";
+      }),
+    });
+
+    await getGetCallbackHandler(pluginOptions)(req);
+    context.foundUsers = [context.createdUser!];
+    req.payload.find.mockClear();
+    req.payload.create.mockClear();
+
+    const authStrategy = createAuthStrategy(pluginOptions, "sub");
+    const result = await authStrategy.authenticate({
+      headers: new Headers({ Authorization: `Bearer ${issuedToken}` }),
+      payload: req.payload,
+    });
+
+    const sid = context.createdUser?.sessions?.[0]?.id;
+    expect(req.payload.findByID).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "users",
+        id: "new-user-id",
+        showHiddenFields: true,
+      }),
+    );
+    expect(req.payload.find).not.toHaveBeenCalled();
+    expect(req.payload.create).not.toHaveBeenCalled();
+    expect(result.user).toEqual(
+      expect.objectContaining({
+        _sid: sid,
+        _strategy: "unit-test-provider",
+        collection: "users",
+        email: "new-user@example.com",
+      }),
+    );
+  });
+
+  it.each([
+    { name: "missing sid", sid: undefined },
+    { name: "revoked sid", sid: "revoked-session-id" },
+  ])("rejects session-backed JWTs with $name", async ({ sid }) => {
+    const context = createMockOAuthTestContext({
+      foundUsers: [
+        {
+          id: "existing-user-id",
+          email: "existing-user@example.com",
+          sub: "provider-user-123",
+          sessions: [
+            {
+              id: "valid-session-id",
+              createdAt: new Date(),
+              expiresAt: new Date(Date.now() + 7200 * 1000),
+            },
+          ],
+        },
+      ],
+    });
+    const req = createCallbackRequest(context);
+    req.payload.collections.users.config.auth = {
+      tokenExpiration: 7200,
+      useSessions: true,
+    };
+    const token = await new SignJWT({
+      id: "existing-user-id",
+      collection: "users",
+      email: "existing-user@example.com",
+      ...(sid ? { sid } : {}),
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("7200 secs")
+      .sign(new TextEncoder().encode(req.payload.secret));
+
+    const authStrategy = createAuthStrategy(basePluginOptions(), "sub");
+    const result = await authStrategy.authenticate({
+      headers: new Headers({ Authorization: `Bearer ${token}` }),
+      payload: req.payload,
+    });
+
+    expect(result.user).toBeNull();
+    expect(req.payload.create).not.toHaveBeenCalled();
   });
 
   it("passes PKCE verifier cookie into the default token exchange", async () => {

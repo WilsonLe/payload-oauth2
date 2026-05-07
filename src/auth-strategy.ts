@@ -6,7 +6,26 @@ import {
   User,
   extractJWT,
 } from "payload";
+import {
+  shouldUsePayloadSessions,
+  userHasPayloadSession,
+} from "./auth-sessions";
 import { PluginOptions } from "./types";
+
+const getStringClaim = (
+  jwtUser: JWTPayload,
+  claimName: string,
+): string | undefined => {
+  const claim = jwtUser[claimName];
+  return typeof claim === "string" && claim.length > 0 ? claim : undefined;
+};
+
+const getJWTUserID = (jwtUser: JWTPayload): number | string | undefined => {
+  const userID = jwtUser.id;
+  return typeof userID === "string" || typeof userID === "number"
+    ? userID
+    : undefined;
+};
 
 export const createAuthStrategy = (
   pluginOptions: PluginOptions,
@@ -41,6 +60,40 @@ export const createAuthStrategy = (
           jwtUser.collection) ||
           pluginOptions.authCollection ||
           "users") as CollectionSlug;
+        const collectionConfig = payload.collections[userCollection]?.config;
+        if (!collectionConfig) return { user: null };
+
+        if (shouldUsePayloadSessions(collectionConfig)) {
+          const sid = getStringClaim(jwtUser, "sid");
+          const userID = getJWTUserID(jwtUser);
+          if (!sid || userID === undefined) return { user: null };
+
+          const user = (await payload.findByID({
+            collection: userCollection,
+            disableErrors: true,
+            id: userID,
+            showHiddenFields: true,
+          })) as User | null;
+
+          if (!user || !userHasPayloadSession(user, sid)) {
+            return { user: null };
+          }
+
+          if (
+            typeof collectionConfig.auth === "object" &&
+            collectionConfig.auth.verify &&
+            !user._verified
+          ) {
+            return { user: null };
+          }
+
+          user.collection = userCollection;
+          user._sid = sid;
+          user._strategy = pluginOptions.strategyName;
+
+          return { user };
+        }
+
         let user: User | null = null;
 
         if (pluginOptions.useEmailAsIdentity) {
@@ -87,6 +140,7 @@ export const createAuthStrategy = (
           }
         }
         user.collection = userCollection;
+        user._strategy = pluginOptions.strategyName;
 
         // Return the user object
         return { user };

@@ -123,6 +123,15 @@ export function createMockPayload(context?: OAuthTestContext): Payload {
         nextPage: null,
       };
     }),
+    findByID: jest.fn().mockImplementation(async ({ id }) => {
+      if (!context) return null;
+      return (
+        context.foundUsers.find((user) => user.id === id) ||
+        (context.createdUser?.id === id ? context.createdUser : null) ||
+        (context.updatedUser?.id === id ? context.updatedUser : null) ||
+        null
+      );
+    }),
     create: jest.fn().mockImplementation(async ({ data }) => {
       const newUser = { id: "new-user-id", ...data };
       if (context) {
@@ -137,6 +146,31 @@ export function createMockPayload(context?: OAuthTestContext): Payload {
       }
       return updatedUser;
     }),
+    db: {
+      findOne: jest.fn().mockImplementation(async ({ where }) => {
+        if (!context) return null;
+        const id = where?.id?.equals;
+        return (
+          context.foundUsers.find((user) => user.id === id) ||
+          (context.createdUser?.id === id ? context.createdUser : null) ||
+          (context.updatedUser?.id === id ? context.updatedUser : null) ||
+          null
+        );
+      }),
+      updateOne: jest.fn().mockImplementation(async ({ id, data }) => {
+        if (context) {
+          const mergeUser = (user: MockUserInfo | null) =>
+            user?.id === id ? Object.assign(user, data) : user;
+
+          context.createdUser = mergeUser(context.createdUser);
+          context.updatedUser = mergeUser(context.updatedUser);
+          context.foundUsers = context.foundUsers.map((user) =>
+            user.id === id ? Object.assign(user, data) : user,
+          );
+        }
+        return data;
+      }),
+    },
   };
 
   return mockPayload as Payload;
