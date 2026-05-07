@@ -91,7 +91,7 @@ export const createAuthStrategy = (
           user._sid = sid;
           user._strategy = pluginOptions.strategyName;
 
-          return { user };
+          return { user } as AuthStrategyResult;
         }
 
         let user: User | null = null;
@@ -143,7 +143,7 @@ export const createAuthStrategy = (
         user._strategy = pluginOptions.strategyName;
 
         // Return the user object
-        return { user };
+        return { user } as AuthStrategyResult;
       } catch (e) {
         payload.logger.error(e);
         return { user: null };

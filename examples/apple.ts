@@ -118,7 +118,7 @@ export const appleOAuth = OAuth2Plugin({
         lastName: payload.family_name || "",
       };
     } catch (error) {
-      req.payload.logger.error("Error parsing Apple token:", error);
+      req.payload.logger.error({ err: error }, "Error parsing Apple token");
       throw error;
     }
   },
@@ -153,7 +153,7 @@ export const appleOAuth = OAuth2Plugin({
       // Return the id_token which contains the user info
       return tokenResponse.id_token;
     } catch (error) {
-      req.payload.logger.error("Error in getToken:", error);
+      req.payload.logger.error({ err: error }, "Error in getToken");
       throw error;
     }
   },
