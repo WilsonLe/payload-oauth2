@@ -43,15 +43,11 @@ Create a normal browser navigation to the Payload authorize endpoint from your l
 
 ```tsx
 export function GoogleLoginButton() {
-  return <a href="/api/users/oauth/google">Continue with Google</a>;
+  return <a href="/api/users/oauth/google">Continue with Google</a>
 }
 ```
 
 In Next.js App Router apps, prefer not to start OAuth with `next/link` or `router.push()` for the authorize endpoint. The endpoint returns a redirect to the OAuth provider, not a React Server Component payload. The plugin defensively ignores Next.js RSC navigation probes so client routing can fall back without the noisy `Failed to fetch RSC payload ... Falling back to browser navigation` log, but normal document navigation is still the most direct option.
-
-# Payload auth sessions
-
-For Payload's standard session lifecycle (`auth.useSessions: true` with the local JWT strategy enabled), OAuth logins create a Payload session and sign its `sid` into the `payload-token` cookie. Later auth requests validate that `sid` against `user.sessions`, so Payload refresh works after OAuth login and logout/session revocation is honored.
 
 # Contributing
 
