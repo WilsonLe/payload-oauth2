@@ -160,8 +160,10 @@ export function getFieldsToSign(options: {
   sid?: string;
   user: Record<string, unknown> | null;
 }): Record<string, unknown> {
+  const user = options.user ?? {};
   return {
-    ...(options.user ?? {}),
+    id: user.id,
+    collection: user.collection,
     email: options.email,
     ...(options.sid ? { sid: options.sid } : {}),
   };

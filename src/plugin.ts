@@ -1,5 +1,6 @@
 import type { Plugin } from "payload";
 import { modifyAuthCollection } from "./modify-auth-collection";
+import { resolveOAuthConfig, warnOAuthConfig } from "./oauth-config";
 import type { PluginOptions } from "./types";
 
 export const OAuth2Plugin =
@@ -11,29 +12,28 @@ export const OAuth2Plugin =
       return config;
     }
 
+    const oauthConfig = resolveOAuthConfig(pluginOptions);
+    warnOAuthConfig(oauthConfig);
+
     // /////////////////////////////////////
     // Modify auth collection
     // /////////////////////////////////////
-    const authCollectionSlug = pluginOptions.authCollection || "users";
-    const subFieldName =
-      pluginOptions.subField?.name || pluginOptions.subFieldName || "sub";
     const authCollection = config.collections?.find(
-      (collection) => collection.slug === authCollectionSlug,
+      (collection) => collection.slug === oauthConfig.authCollection,
     );
     if (!authCollection) {
       throw new Error(
-        `The collection with the slug "${authCollectionSlug}" was not found.`,
+        `The collection with the slug "${oauthConfig.authCollection}" was not found.`,
       );
     }
     const modifiedAuthCollection = modifyAuthCollection(
-      pluginOptions,
+      oauthConfig,
       authCollection,
-      subFieldName,
     );
 
     config.collections = [
       ...(config.collections?.filter(
-        (collection) => collection.slug !== authCollectionSlug,
+        (collection) => collection.slug !== oauthConfig.authCollection,
       ) || []),
       modifiedAuthCollection,
     ];

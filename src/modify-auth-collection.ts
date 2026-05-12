@@ -1,14 +1,18 @@
-import { AuthStrategy, type CollectionConfig } from "payload";
+import type { AuthStrategy, CollectionConfig } from "payload";
 import { createAuthStrategy } from "./auth-strategy";
 import { createAuthorizeEndpoint } from "./authorize-endpoint";
 import { createCallbackEndpoint } from "./callback-endpoint";
-import { PluginOptions } from "./types";
+import { resolveOAuthConfig, type OAuthConfigInput } from "./oauth-config";
 
 export const modifyAuthCollection = (
-  pluginOptions: PluginOptions,
+  input: OAuthConfigInput,
   existingCollectionConfig: CollectionConfig,
-  subFieldName: string,
+  subFieldNameOverride?: string,
 ): CollectionConfig => {
+  const config = resolveOAuthConfig(input, {
+    subFieldName: subFieldNameOverride,
+  });
+
   // /////////////////////////////////////
   // modify fields
   // /////////////////////////////////////
@@ -16,14 +20,14 @@ export const modifyAuthCollection = (
   // add sub fields
   const fields = [...(existingCollectionConfig.fields || [])];
   const existingSubField = fields.find(
-    (field) => "name" in field && field.name === subFieldName,
+    (field) => "name" in field && field.name === config.subFieldName,
   );
   if (!existingSubField) {
-    if (!!pluginOptions.subField) {
-      fields.push(pluginOptions.subField);
+    if (config.raw.subField) {
+      fields.push(config.raw.subField);
     } else {
       fields.push({
-        name: subFieldName,
+        name: config.subFieldName,
         type: "text",
         index: true,
         access: {
@@ -41,7 +45,7 @@ export const modifyAuthCollection = (
     typeof existingCollectionConfig.auth !== "boolean" &&
     existingCollectionConfig.auth !== undefined &&
     existingCollectionConfig.auth.disableLocalStrategy === true &&
-    pluginOptions.useEmailAsIdentity === true &&
+    config.useEmailAsIdentity === true &&
     fields.every((field: any) => field.name !== "email")
   ) {
     fields.push({
@@ -57,7 +61,7 @@ export const modifyAuthCollection = (
   // modify strategies
   // /////////////////////////////////////
 
-  const authStrategy = createAuthStrategy(pluginOptions, subFieldName);
+  const authStrategy = createAuthStrategy(config);
   let strategies: AuthStrategy[] = [];
   if (
     typeof existingCollectionConfig.auth !== "boolean" &&
@@ -65,7 +69,7 @@ export const modifyAuthCollection = (
     Array.isArray(existingCollectionConfig.auth.strategies)
   ) {
     strategies = existingCollectionConfig.auth.strategies.filter(
-      (strategy) => strategy.name !== pluginOptions.strategyName,
+      (strategy) => strategy.name !== config.strategyName,
     );
   }
   strategies.push(authStrategy);
@@ -75,8 +79,8 @@ export const modifyAuthCollection = (
   // /////////////////////////////////////
   const endpoints = [...(existingCollectionConfig.endpoints || [])];
   const oauthEndpoints = [
-    createAuthorizeEndpoint(pluginOptions),
-    ...createCallbackEndpoint(pluginOptions),
+    createAuthorizeEndpoint(config),
+    ...createCallbackEndpoint(config),
   ];
   oauthEndpoints.forEach((oauthEndpoint) => {
     const existingEndpoint = endpoints.find(

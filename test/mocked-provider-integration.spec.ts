@@ -225,7 +225,7 @@ describe("Mocked external provider integration", () => {
       );
     });
 
-    it("updates an existing user with mocked provider info", async () => {
+    it("reuses an existing user without updating mocked provider info", async () => {
       const usersCollection = buildPluginCollection(provider);
       const callbackEndpoint = findEndpoint(
         usersCollection.endpoints,
@@ -252,15 +252,11 @@ describe("Mocked external provider integration", () => {
 
       expect(callbackResponse.status).toBe(302);
       expect(callbackRequest.payload.create).not.toHaveBeenCalled();
-      expect(callbackRequest.payload.update).toHaveBeenCalledWith(
+      expect(callbackRequest.payload.update).not.toHaveBeenCalled();
+      expect(callbackRequest.user).toEqual(
         expect.objectContaining({
-          collection: "users",
           id: existingUser.id,
-          data: expect.objectContaining({
-            email: provider.userInfo.email,
-            sub: provider.userInfo.sub,
-            collection: "users",
-          }),
+          collection: "users",
         }),
       );
     });

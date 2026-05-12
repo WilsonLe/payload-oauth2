@@ -141,7 +141,7 @@ describe("Callback endpoint unit flow", () => {
     );
   });
 
-  it("updates an existing user through the callback endpoint interface", async () => {
+  it("reuses an existing user without updating provider profile data", async () => {
     const existingUser = {
       id: "existing-user-id",
       email: "existing-user@example.com",
@@ -163,22 +163,16 @@ describe("Callback endpoint unit flow", () => {
 
     expect(response.status).toBe(302);
     expect(req.payload.create).not.toHaveBeenCalled();
-    expect(req.payload.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "users",
-        id: "existing-user-id",
-        data: expect.objectContaining({
-          email: existingUser.email,
-          sub: existingUser.sub,
-          collection: "users",
-          name: "Updated User",
-        }),
-        showHiddenFields: true,
-      }),
-    );
+    expect(req.payload.update).not.toHaveBeenCalled();
     expect(pluginOptions.successRedirect).toHaveBeenCalledWith(
       req,
       expect.any(String),
+    );
+    expect(req.user).toEqual(
+      expect.objectContaining({
+        id: "existing-user-id",
+        collection: "users",
+      }),
     );
   });
 
@@ -228,6 +222,45 @@ describe("Callback endpoint unit flow", () => {
       expect.objectContaining({
         collection: "users",
         email: "new-user@example.com",
+        sub: "provider-user-123",
+      }),
+    );
+  });
+
+  it("authenticates the callback JWT when provider subject is the identity", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    let issuedToken = "";
+    const pluginOptions = basePluginOptions({
+      useEmailAsIdentity: false,
+      successRedirect: jest.fn((_req, token) => {
+        issuedToken = token;
+        return "/admin";
+      }),
+    });
+
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+    expect(response.status).toBe(302);
+    expect(context.createdUser).toBeTruthy();
+
+    const { payload: jwtPayload } = await jwtVerify(
+      issuedToken,
+      new TextEncoder().encode(req.payload.secret),
+    );
+    expect(jwtPayload.sub).toBe("provider-user-123");
+
+    context.foundUsers = [context.createdUser!];
+    const authStrategy = createAuthStrategy(pluginOptions, "sub");
+    const result = await authStrategy.authenticate({
+      headers: new Headers({ Authorization: `Bearer ${issuedToken}` }),
+      payload: req.payload,
+    });
+
+    expect(result.user).toEqual(
+      expect.objectContaining({
+        collection: "users",
         sub: "provider-user-123",
       }),
     );
@@ -368,6 +401,81 @@ describe("Callback endpoint unit flow", () => {
     expect(req.payload.create).not.toHaveBeenCalled();
   });
 
+  it("keeps email in callback JWT when email identity conflicts with email exclusion", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    let issuedToken = "";
+    const pluginOptions = basePluginOptions({
+      excludeEmailFromJwtToken: true,
+      successRedirect: jest.fn((_req, token) => {
+        issuedToken = token;
+        return "/admin";
+      }),
+    });
+
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+    expect(response.status).toBe(302);
+    expect(context.createdUser).toBeTruthy();
+
+    context.foundUsers = [context.createdUser!];
+    const authStrategy = createAuthStrategy(pluginOptions, "sub");
+    const result = await authStrategy.authenticate({
+      headers: new Headers({ Authorization: `Bearer ${issuedToken}` }),
+      payload: req.payload,
+    });
+
+    expect(result.user).toEqual(
+      expect.objectContaining({ email: "new-user@example.com" }),
+    );
+  });
+
+  it("does not create missing users from the auth strategy", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    let issuedToken = "";
+    const pluginOptions = basePluginOptions({
+      successRedirect: jest.fn((_req, token) => {
+        issuedToken = token;
+        return "/admin";
+      }),
+    });
+
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+    expect(response.status).toBe(302);
+    expect(context.createdUser).toBeTruthy();
+
+    context.foundUsers = [];
+    (req.payload.create as jest.Mock).mockClear();
+    const authStrategy = createAuthStrategy(pluginOptions, "sub");
+    const result = await authStrategy.authenticate({
+      headers: new Headers({ Authorization: `Bearer ${issuedToken}` }),
+      payload: req.payload,
+    });
+
+    expect(result.user).toBeNull();
+    expect(req.payload.create).not.toHaveBeenCalled();
+    expect(req.payload.logger.warn).toHaveBeenCalledWith(
+      "OAuth user not found in users for email: new-user@example.com",
+    );
+  });
+
+  it("surfaces invalid JWT errors from the auth strategy", async () => {
+    const context = createMockOAuthTestContext();
+    const req = createCallbackRequest(context);
+    const authStrategy = createAuthStrategy(basePluginOptions(), "sub");
+
+    await expect(
+      authStrategy.authenticate({
+        headers: new Headers({ Authorization: "Bearer invalid-jwt" }),
+        payload: req.payload,
+      }),
+    ).rejects.toThrow();
+  });
+
   it("passes PKCE verifier cookie into the default token exchange", async () => {
     const context = createMockOAuthTestContext({ foundUsers: [] });
     const req = createCallbackRequest(context);
@@ -501,6 +609,29 @@ describe("Callback endpoint unit flow", () => {
     expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toContain(
       encodeURIComponent("User not found: new-user@example.com"),
+    );
+    expect(req.payload.create).not.toHaveBeenCalled();
+    expect(pluginOptions.successRedirect).not.toHaveBeenCalled();
+    expect(pluginOptions.failureRedirect).toHaveBeenCalledWith(
+      req,
+      expect.any(Error),
+    );
+  });
+
+  it("redirects to failure when missing user behavior is invalid", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    const pluginOptions = basePluginOptions({
+      onUserNotFoundBehavior: "skip" as PluginOptions["onUserNotFoundBehavior"],
+    });
+
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toContain(
+      encodeURIComponent("Invalid onUserNotFoundBehavior: skip"),
     );
     expect(req.payload.create).not.toHaveBeenCalled();
     expect(pluginOptions.successRedirect).not.toHaveBeenCalled();

@@ -20,6 +20,17 @@ const pluginOptions = (): PluginOptions => ({
   failureRedirect: jest.fn(),
 });
 
+const pluginOptionsWithInvalidLegacyValues = (
+  options: PluginOptions,
+): PluginOptions => ({
+  ...options,
+  serverURL: "localhost:3000/",
+  authorizePath: "oauth/idempotent/",
+  callbackPath: "oauth/idempotent/callback/",
+  providerAuthorizationUrl: "https://provider.example.test/authorize/",
+  excludeEmailFromJwtToken: true,
+});
+
 const authCollection = (): CollectionConfig =>
   ({
     slug: "users",
@@ -79,5 +90,47 @@ describe("OAuth plugin collection wiring", () => {
       countEndpoints(usersCollection!, "/oauth/idempotent/callback", "post"),
     ).toBe(1);
     expect(countStrategies(usersCollection!, "idempotent-provider")).toBe(1);
+  });
+
+  it("warns about invalid config invariants while keeping legacy values", () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const plugin = OAuth2Plugin(
+      pluginOptionsWithInvalidLegacyValues(pluginOptions()),
+    );
+
+    try {
+      const result = plugin({ collections: [authCollection()] } as Config);
+      const usersCollection = result.collections?.find(
+        (collection) => collection.slug === "users",
+      );
+
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('authorizePath should start with "/"'),
+      );
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('callbackPath should start with "/"'),
+      );
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "excludeEmailFromJwtToken cannot be true when useEmailAsIdentity is true",
+        ),
+      );
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("serverURL should be an absolute http(s) URL"),
+      );
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "providerAuthorizationUrl should not have a trailing slash",
+        ),
+      );
+      expect(countEndpoints(usersCollection!, "oauth/idempotent/", "get")).toBe(
+        1,
+      );
+      expect(
+        countEndpoints(usersCollection!, "oauth/idempotent/callback/", "get"),
+      ).toBe(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
