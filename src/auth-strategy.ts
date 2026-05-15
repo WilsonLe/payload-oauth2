@@ -3,7 +3,7 @@ import {
   AuthStrategy,
   AuthStrategyResult,
   CollectionSlug,
-  User,
+  TypedUser as User,
   extractJWT,
 } from "payload";
 import {
@@ -95,8 +95,10 @@ export const createAuthStrategy = (
         }
 
         let user: User | null = null;
-
-        if (pluginOptions.useEmailAsIdentity) {
+        if (pluginOptions.resolveUserIdentity) {
+          user = await pluginOptions.resolveUserIdentity(jwtUser, payload);
+          return { user };
+        } else if (pluginOptions.useEmailAsIdentity) {
           if (!jwtUser.email || typeof jwtUser.email !== "string") {
             payload.logger.warn(
               "Using email as identity but no email is found in jwt token",
