@@ -77,7 +77,6 @@ export const addPayloadSessionToUser = async ({
   const nextSessions = [...existingSessions, session];
 
   sessionAwareUser.sessions = nextSessions;
-  sessionAwareUser.updatedAt = null;
 
   await req.payload.db.updateOne({
     id: user.id,
