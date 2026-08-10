@@ -277,6 +277,53 @@ describe("Callback endpoint unit flow", () => {
     expect(req.user).toEqual(expect.objectContaining({ _sid: sid }));
   });
 
+  it("does not persist populated relationship fields when creating Payload sessions", async () => {
+    const context = createMockOAuthTestContext({ foundUsers: [] });
+    const req = createCallbackRequest(context);
+    req.payload.collections.users.config.auth = {
+      tokenExpiration: 7200,
+      useSessions: true,
+    };
+    req.payload.collections.users.config.hooks = {
+      beforeLogin: [
+        ({ user }) => ({
+          ...(user as Record<string, unknown>),
+          roles: [
+            {
+              id: "6798c5c9c99e8d8d3d3b9be5",
+              slug: "admin",
+              name: "Admin",
+            },
+          ],
+        }),
+      ],
+      afterLogin: [],
+    };
+
+    const pluginOptions = basePluginOptions();
+    const response = (await getGetCallbackHandler(pluginOptions)(
+      req,
+    )) as Response;
+
+    expect(response.status).toBe(302);
+
+    const updateCall = (req.payload.db.updateOne as jest.Mock).mock
+      .calls[0]?.[0];
+    expect(updateCall).toEqual(
+      expect.objectContaining({
+        collection: "users",
+        id: "new-user-id",
+      }),
+    );
+    expect(updateCall.data).toEqual(
+      expect.objectContaining({
+        sessions: expect.any(Array),
+        updatedAt: null,
+      }),
+    );
+    expect(updateCall.data).not.toHaveProperty("roles");
+  });
+
   it("validates session-backed callback JWTs through the auth strategy", async () => {
     const context = createMockOAuthTestContext({ foundUsers: [] });
     const req = createCallbackRequest(context);

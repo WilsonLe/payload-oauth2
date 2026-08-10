@@ -74,14 +74,17 @@ export const addPayloadSessionToUser = async ({
   const existingSessions = Array.isArray(sessionAwareUser.sessions)
     ? removeExpiredPayloadSessions(sessionAwareUser.sessions)
     : [];
+  const nextSessions = [...existingSessions, session];
 
-  sessionAwareUser.sessions = [...existingSessions, session];
-  sessionAwareUser.updatedAt = null;
+  sessionAwareUser.sessions = nextSessions;
 
   await req.payload.db.updateOne({
     id: user.id,
     collection: collectionConfig.slug as CollectionSlug,
-    data: sessionAwareUser,
+    data: {
+      sessions: nextSessions,
+      updatedAt: null,
+    },
     req,
     returning: false,
   });

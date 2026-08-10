@@ -96,8 +96,6 @@ typings/
 .pnp.*
 
 # dotenv environment variables file
-.env
-.env.local
 
 ### SublimeText ###
 # cache files for sublime text
@@ -250,3 +248,4 @@ dev/src/uploads
 
 *.db*
 *.p8*
+config.bat
